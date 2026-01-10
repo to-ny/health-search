@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { headers } from 'next/headers';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { QueryProvider } from '@/components/providers/QueryProvider';
 import { ClientLayout } from '@/components/layout/ClientLayout';
@@ -20,13 +21,23 @@ export const metadata: Metadata = {
   keywords: ['medication', 'Belgium', 'pharmacy', 'drugs', 'reimbursement', 'CNK', 'generic'],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get('x-nonce') ?? '';
+
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          nonce={nonce}
+          dangerouslySetInnerHTML={{
+            __html: `window.__webpack_nonce__ = "${nonce}";`,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-gray-50 font-sans antialiased dark:bg-gray-900`}
       >
