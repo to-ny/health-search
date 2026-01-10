@@ -29,6 +29,7 @@ const parser = new XMLParser({
       'Copayment',
       'Text',
       'Atc',
+      'CommentedClassification',
     ];
     return arrayElements.includes(name);
   },
@@ -552,4 +553,70 @@ export interface RawCompanyData {
   CountryCode?: string;
   Phone?: string;
   Language?: string;
+}
+
+export interface RawAtcClassificationData {
+  CommentedClassificationCode?: string;
+  Title?: RawTextElement[];
+  Content?: RawTextElement[];
+  PosologyNote?: RawTextElement[];
+  Url?: RawTextElement[];
+}
+
+/**
+ * Parses a FindCommentedClassification (ATC) SOAP response
+ */
+export function parseFindAtcResponse(xml: string): ParsedSoapResponse<RawAtcClassificationData[]> {
+  try {
+    const body = extractSoapBody(xml);
+    if (!body) {
+      return { success: false, error: { code: 'PARSE_ERROR', message: 'Invalid SOAP response' } };
+    }
+
+    // Check for SOAP fault
+    const faultKey = Object.keys(body).find((k) => k.includes('Fault'));
+    if (faultKey) {
+      const fault = body[faultKey] as Record<string, unknown>;
+      const detail = fault.detail as Record<string, unknown> | undefined;
+
+      // Check for "no results found" fault (code 1008)
+      const businessError = detail?.['ns2:BusinessError'] as Record<string, unknown> | undefined;
+      const errorCode = businessError?.Code;
+
+      if (errorCode === 1008 || errorCode === '1008') {
+        return {
+          success: true,
+          data: [],
+        };
+      }
+
+      return {
+        success: false,
+        error: {
+          code: 'SOAP_FAULT',
+          message: String(fault.faultstring || fault.detail || 'Unknown SOAP fault'),
+        },
+      };
+    }
+
+    const responseKey = Object.keys(body).find((k) => k.includes('FindCommentedClassificationResponse'));
+    if (!responseKey) {
+      return { success: false, error: { code: 'NO_RESPONSE', message: 'No FindCommentedClassificationResponse found' } };
+    }
+
+    const response = body[responseKey] as Record<string, unknown>;
+    const classifications = (response.CommentedClassification || []) as RawAtcClassificationData[];
+
+    return {
+      success: true,
+      data: Array.isArray(classifications) ? classifications : [classifications],
+      searchDate: response['@_SearchDate'] as string,
+      samId: response['@_SamId'] as string,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: { code: 'PARSE_ERROR', message: error instanceof Error ? error.message : 'Unknown error' },
+    };
+  }
 }

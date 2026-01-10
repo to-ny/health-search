@@ -274,6 +274,8 @@ export interface MedicationSearchResult {
   price?: number;
   /** Whether it's reimbursed */
   isReimbursed: boolean;
+  /** Whether it requires Chapter IV prior authorization (if known) */
+  isChapterIV?: boolean;
   /** Status */
   status: string;
   /** Pack display value */
