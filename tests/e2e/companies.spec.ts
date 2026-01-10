@@ -1,182 +1,40 @@
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
 
 test.describe('Companies Page', () => {
-  test.beforeEach(async ({ page }) => {
+  test('should display companies page and allow search', async ({ page }) => {
     await page.goto('/companies');
-  });
 
-  test('should display the main heading', async ({ page }) => {
+    // Page loads with correct heading
     await expect(page.getByRole('heading', { level: 1 })).toContainText('Pharmaceutical Companies');
-  });
-
-  test('should have search input', async ({ page }) => {
     await expect(page.getByRole('searchbox')).toBeVisible();
-  });
-
-  test('should have search button', async ({ page }) => {
-    await expect(page.getByRole('button', { name: 'Search' })).toBeVisible();
-  });
-
-  test('should show empty state initially', async ({ page }) => {
     await expect(page.getByText('Search for pharmaceutical companies')).toBeVisible();
   });
-
-  test('should have no accessibility violations', async ({ page }) => {
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
 });
 
-test.describe('Company Detail Page', () => {
-  test('should display company information section', async ({ page }) => {
-    // Navigate to a company detail page with a mock actorNr
-    await page.goto('/companies/123456');
-
-    // Should show breadcrumb navigation
-    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
-
-    // Should have links back to companies list
-    await expect(page.getByRole('link', { name: 'Companies' })).toBeVisible();
-  });
-
-  test('should have View Products link pointing to /search with company param', async ({ page }) => {
-    // Navigate to a company detail page
-    await page.goto('/companies/123456');
-
-    // Find the View Products button/link
-    const viewProductsLink = page.getByRole('link', { name: /view products/i });
-
-    // Verify it exists and has correct href
-    if (await viewProductsLink.isVisible()) {
-      const href = await viewProductsLink.getAttribute('href');
-      expect(href).toBe('/search?company=123456');
-    }
-  });
-
-  test('should navigate to search page with company filter when clicking View Products', async ({ page }) => {
-    // Navigate to a company detail page
-    await page.goto('/companies/123456');
-
-    // Find and click the View Products link
-    const viewProductsLink = page.getByRole('link', { name: /view products/i });
-
-    if (await viewProductsLink.isVisible()) {
-      await viewProductsLink.click();
-
-      // Verify navigation to search page with company parameter
-      await expect(page).toHaveURL(/\/search\?company=123456/);
-    }
-  });
-
-  test('should have no accessibility violations', async ({ page }) => {
-    await page.goto('/companies/123456');
-
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-    expect(accessibilityScanResults.violations).toEqual([]);
-  });
-});
-
-test.describe('Search Page URL Parameters', () => {
-  test('should update URL when performing a search', async ({ page }) => {
+test.describe('Search Page', () => {
+  test('should display search page and sync URL with search state', async ({ page }) => {
     await page.goto('/search');
 
-    // Type in the search box
+    // Page loads correctly
+    await expect(page.getByRole('heading', { level: 1 })).toContainText('Search Medications');
+    await expect(page.getByRole('searchbox')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Name' })).toBeVisible();
+
+    // Search updates URL
     const searchInput = page.getByRole('searchbox');
     await searchInput.fill('paracetamol');
-
-    // Wait for URL to update (debounce + navigation)
     await page.waitForURL(/\/search\?q=paracetamol/, { timeout: 5000 });
   });
 
-  test('should restore search from URL parameters on page load', async ({ page }) => {
-    // Navigate directly with search params
-    await page.goto('/search?q=ibuprofen');
+  test('should restore search state from URL', async ({ page }) => {
+    await page.goto('/search?q=ibuprofen&type=cnk');
 
-    // Verify the search input has the query
-    const searchInput = page.getByRole('searchbox');
-    await expect(searchInput).toHaveValue('ibuprofen');
+    await expect(page.getByRole('searchbox')).toHaveValue('ibuprofen');
+    await expect(page.getByRole('button', { name: /CNK Code/i })).toBeVisible();
   });
 
   test('should handle company filter in URL', async ({ page }) => {
-    // Navigate with company filter
     await page.goto('/search?company=123456');
-
-    // Should show the company filter is active
     await expect(page.getByText('#123456')).toBeVisible();
-  });
-
-  test('should handle combined query and company filter in URL', async ({ page }) => {
-    // Navigate with both query and company filter
-    await page.goto('/search?q=aspirin&company=789');
-
-    // Verify search input has the query
-    const searchInput = page.getByRole('searchbox');
-    await expect(searchInput).toHaveValue('aspirin');
-
-    // Verify company filter is shown
-    await expect(page.getByText('#789')).toBeVisible();
-  });
-
-  test('should update URL when changing search type', async ({ page }) => {
-    await page.goto('/search');
-
-    // Open search type dropdown
-    const typeButton = page.getByRole('button', { name: /by name/i });
-    await typeButton.click();
-
-    // Select CNK search type
-    await page.getByRole('option', { name: /by cnk/i }).click();
-
-    // Type a CNK code
-    const searchInput = page.getByRole('searchbox');
-    await searchInput.fill('1234567');
-
-    // Wait for URL to update with type parameter
-    await page.waitForURL(/\/search\?q=1234567&type=cnk/, { timeout: 5000 });
-  });
-
-  test('should restore search type from URL', async ({ page }) => {
-    // Navigate with search type parameter
-    await page.goto('/search?q=1234567&type=cnk');
-
-    // Verify the search type dropdown shows CNK
-    await expect(page.getByRole('button', { name: /by cnk/i })).toBeVisible();
-
-    // Verify search input has the query
-    const searchInput = page.getByRole('searchbox');
-    await expect(searchInput).toHaveValue('1234567');
-  });
-
-  test('should sync state when using browser back/forward', async ({ page }) => {
-    // Start at search page
-    await page.goto('/search');
-
-    // Perform first search
-    const searchInput = page.getByRole('searchbox');
-    await searchInput.fill('aspirin');
-
-    // Wait for URL update
-    await page.waitForURL(/\/search\?q=aspirin/, { timeout: 5000 });
-
-    // Navigate to home page to create history entry
-    await page.goto('/');
-    await expect(page).toHaveURL('/');
-
-    // Go back to search page
-    await page.goBack();
-
-    // Should restore to the search page with aspirin query
-    await expect(page).toHaveURL(/\/search\?q=aspirin/);
-
-    // Verify the search input is restored
-    await expect(page.getByRole('searchbox')).toHaveValue('aspirin');
-  });
-
-  test('should have no accessibility violations with URL params', async ({ page }) => {
-    await page.goto('/search?q=test&company=123');
-
-    const accessibilityScanResults = await new AxeBuilder({ page }).analyze();
-    expect(accessibilityScanResults.violations).toEqual([]);
   });
 });

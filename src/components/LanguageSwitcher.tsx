@@ -12,23 +12,32 @@ const LANGUAGES: Record<Language, { label: string; flag: string }> = {
 };
 
 const STORAGE_KEY = 'health-search-language';
+const DEFAULT_LANGUAGE: Language = 'en';
 
 function getStoredLanguageFromStorage(): Language {
-  if (typeof window === 'undefined') return 'en';
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored && stored in LANGUAGES) return stored as Language;
-  // Try to detect from browser
-  const browserLang = navigator.language.split('-')[0];
-  if (browserLang in LANGUAGES) return browserLang as Language;
-  return 'en';
+  if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored && stored in LANGUAGES) return stored as Language;
+    // Try to detect from browser
+    const browserLang = navigator.language.split('-')[0];
+    if (browserLang in LANGUAGES) return browserLang as Language;
+  } catch {
+    // localStorage may be blocked in some contexts
+  }
+  return DEFAULT_LANGUAGE;
 }
 
 // External store for language state - shared across all useLanguage hooks
-// Using a closure to encapsulate the mutable state
+// Hydration-safe: Returns default language until explicitly initialized after mount
 function createLanguageStore() {
-  let currentLanguage: Language = 'en';
-  let isInitialized = false;
+  let currentLanguage: Language = DEFAULT_LANGUAGE;
+  let isHydrated = false;
   const listeners = new Set<() => void>();
+
+  function notifyListeners() {
+    listeners.forEach((listener) => listener());
+  }
 
   return {
     subscribe(listener: () => void): () => void {
@@ -36,22 +45,41 @@ function createLanguageStore() {
       return () => listeners.delete(listener);
     },
     getSnapshot(): Language {
-      // Lazy initialization on first client-side access
-      if (!isInitialized && typeof window !== 'undefined') {
-        isInitialized = true;
-        currentLanguage = getStoredLanguageFromStorage();
-        document.documentElement.lang = currentLanguage;
-      }
+      // Always return current language - no side effects during render
       return currentLanguage;
     },
     getServerSnapshot(): Language {
-      return 'en';
+      return DEFAULT_LANGUAGE;
+    },
+    // Called once after hydration to sync with stored preference
+    hydrate(): void {
+      if (isHydrated) return;
+      isHydrated = true;
+      const storedLanguage = getStoredLanguageFromStorage();
+      if (storedLanguage !== currentLanguage) {
+        currentLanguage = storedLanguage;
+        notifyListeners();
+      }
+      // Sync document.lang after hydration (safe side effect)
+      if (typeof document !== 'undefined') {
+        document.documentElement.lang = currentLanguage;
+      }
     },
     setLanguage(lang: Language): void {
+      if (lang === currentLanguage) return;
       currentLanguage = lang;
-      localStorage.setItem(STORAGE_KEY, lang);
-      document.documentElement.lang = lang;
-      listeners.forEach((listener) => listener());
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(STORAGE_KEY, lang);
+        } catch {
+          // localStorage may be blocked
+        }
+        document.documentElement.lang = lang;
+      }
+      notifyListeners();
+    },
+    isHydrated(): boolean {
+      return isHydrated;
     },
   };
 }
@@ -73,6 +101,11 @@ export function useLanguage(): [Language, (lang: Language) => void] {
     languageStore.getSnapshot,
     languageStore.getServerSnapshot
   );
+
+  // Hydrate the store after mount - this triggers a re-render with the stored language
+  useEffect(() => {
+    languageStore.hydrate();
+  }, []);
 
   return [language, languageStore.setLanguage];
 }
