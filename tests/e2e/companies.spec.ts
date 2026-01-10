@@ -47,12 +47,9 @@ test.describe('Company Detail Page', () => {
     // Find the View Products button/link
     const viewProductsLink = page.getByRole('link', { name: /view products/i });
 
-    // Verify it exists
+    // Verify it exists and has correct href
     if (await viewProductsLink.isVisible()) {
-      // Get the href attribute
       const href = await viewProductsLink.getAttribute('href');
-
-      // Verify it points to /search with company parameter
       expect(href).toBe('/search?company=123456');
     }
   });
@@ -88,11 +85,8 @@ test.describe('Search Page URL Parameters', () => {
     const searchInput = page.getByRole('searchbox');
     await searchInput.fill('paracetamol');
 
-    // Wait for debounced search and URL update
-    await page.waitForTimeout(500);
-
-    // URL should be updated with the search query
-    await expect(page).toHaveURL(/\/search\?q=paracetamol/);
+    // Wait for URL to update (debounce + navigation)
+    await page.waitForURL(/\/search\?q=paracetamol/, { timeout: 5000 });
   });
 
   test('should restore search from URL parameters on page load', async ({ page }) => {
@@ -138,11 +132,8 @@ test.describe('Search Page URL Parameters', () => {
     const searchInput = page.getByRole('searchbox');
     await searchInput.fill('1234567');
 
-    // Wait for debounced search
-    await page.waitForTimeout(500);
-
-    // URL should include type parameter
-    await expect(page).toHaveURL(/\/search\?q=1234567&type=cnk/);
+    // Wait for URL to update with type parameter
+    await page.waitForURL(/\/search\?q=1234567&type=cnk/, { timeout: 5000 });
   });
 
   test('should restore search type from URL', async ({ page }) => {
@@ -157,29 +148,29 @@ test.describe('Search Page URL Parameters', () => {
     await expect(searchInput).toHaveValue('1234567');
   });
 
-  test('should preserve URL params when using browser back/forward', async ({ page }) => {
+  test('should sync state when using browser back/forward', async ({ page }) => {
+    // Start at search page
     await page.goto('/search');
 
     // Perform first search
     const searchInput = page.getByRole('searchbox');
     await searchInput.fill('aspirin');
-    await page.waitForTimeout(500);
 
-    // Verify first URL
-    await expect(page).toHaveURL(/\/search\?q=aspirin/);
+    // Wait for URL update
+    await page.waitForURL(/\/search\?q=aspirin/, { timeout: 5000 });
 
-    // Perform second search
-    await searchInput.fill('ibuprofen');
-    await page.waitForTimeout(500);
+    // Navigate to home page to create history entry
+    await page.goto('/');
+    await expect(page).toHaveURL('/');
 
-    // Verify second URL
-    await expect(page).toHaveURL(/\/search\?q=ibuprofen/);
-
-    // Go back
+    // Go back to search page
     await page.goBack();
 
-    // Should be back to first search (or search page)
-    await expect(page).toHaveURL(/\/search/);
+    // Should restore to the search page with aspirin query
+    await expect(page).toHaveURL(/\/search\?q=aspirin/);
+
+    // Verify the search input is restored
+    await expect(page.getByRole('searchbox')).toHaveValue('aspirin');
   });
 
   test('should have no accessibility violations with URL params', async ({ page }) => {

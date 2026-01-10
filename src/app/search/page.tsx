@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, Suspense } from 'react';
+import { useState, useCallback, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
@@ -70,8 +70,28 @@ function SearchContent() {
   const [activeCompanyFilter, setActiveCompanyFilter] = useState<string | undefined>(companyFromUrl || undefined);
   const [currentSearchType, setCurrentSearchType] = useState<SearchType>(typeFromUrl || 'name');
 
+  // Track if we're programmatically updating the URL to avoid sync loops
+  const isUpdatingUrl = useRef(false);
+
+  // Sync state when URL changes (e.g., browser back/forward navigation)
+  useEffect(() => {
+    // Skip if we just updated the URL ourselves
+    if (isUpdatingUrl.current) {
+      isUpdatingUrl.current = false;
+      return;
+    }
+
+    // Sync all state from URL params
+    const newSearchParams = buildInitialSearchParams(queryFromUrl, typeFromUrl, companyFromUrl, language);
+    setSearchParams(newSearchParams);
+    setActiveCompanyFilter(companyFromUrl || undefined);
+    setCompanyFilterInput(companyFromUrl || '');
+    setCurrentSearchType(typeFromUrl || 'name');
+  }, [queryFromUrl, typeFromUrl, companyFromUrl, language]);
+
   // Helper to update URL without full page reload
   const updateUrl = useCallback((params: { q?: string; type?: SearchType; company?: string }) => {
+    isUpdatingUrl.current = true;
     const newParams = new URLSearchParams();
     if (params.q) newParams.set('q', params.q);
     if (params.type && params.type !== 'name') newParams.set('type', params.type);
@@ -163,6 +183,7 @@ function SearchContent() {
       {/* Search */}
       <div className="mb-8">
         <SearchBar
+          key={`${queryFromUrl || ''}-${typeFromUrl || 'name'}`}
           onSearch={handleSearch}
           loading={isLoading}
           placeholder={t('search.placeholder')}
