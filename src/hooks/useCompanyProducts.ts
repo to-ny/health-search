@@ -32,9 +32,13 @@ async function fetchCompanyProducts(
   return response.json();
 }
 
+export function getCompanyProductsQueryKey(params: UseCompanyProductsParams) {
+  return ['company', params.actorNr, 'products', params.language, params.limit, params.offset] as const;
+}
+
 export function useCompanyProducts(params: UseCompanyProductsParams, enabled = true) {
   return useQuery({
-    queryKey: ['company', params.actorNr, 'products', params.language, params.limit, params.offset],
+    queryKey: getCompanyProductsQueryKey(params),
     queryFn: ({ signal }) => fetchCompanyProducts(params, signal),
     enabled: enabled && Boolean(params.actorNr),
     staleTime: 5 * 60 * 1000, // 5 minutes
