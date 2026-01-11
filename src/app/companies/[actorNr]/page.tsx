@@ -9,7 +9,7 @@ import { Skeleton, ProductCardSkeletonList } from '@/components/ui/Skeleton';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useLanguage } from '@/components/LanguageSwitcher';
-import { useCompanyProducts } from '@/hooks/useCompanyProducts';
+import { useCompanyProducts, getCompanyProductsQueryKey } from '@/hooks/useCompanyProducts';
 import { formatCountry, formatLanguage } from '@/lib/utils/format';
 import { formatPrice } from '@/lib/utils/price';
 import type { Company, ErrorResponse, MedicationSearchResult } from '@/lib/types';
@@ -219,15 +219,10 @@ function CompanyProducts({ actorNr, companyName, language }: CompanyProductsProp
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAll, setShowAll] = useState(false);
 
-  const queryKey = useMemo(
-    () => ['company', actorNr, 'products', language, undefined, undefined],
-    [actorNr, language]
-  );
+  const queryParams = useMemo(() => ({ actorNr, language }), [actorNr, language]);
+  const queryKey = getCompanyProductsQueryKey(queryParams);
 
-  const { data, isFetching, error, refetch } = useCompanyProducts(
-    { actorNr, language },
-    isExpanded
-  );
+  const { data, isFetching, error, refetch } = useCompanyProducts(queryParams, isExpanded);
 
   const isActivelyFetching = isFetching && isExpanded;
   const { showExtendedMessage: showExtendedLoadingMessage } = useExtendedLoadingTimer(
@@ -363,34 +358,36 @@ function CompanyProducts({ actorNr, companyName, language }: CompanyProductsProp
 
       {hasMoreToShow && (
         <div className="mt-4 text-center">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setShowAll(true)}
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
             {t('common.showMore', { count: totalCount - INITIAL_PRODUCTS_LIMIT })}
-          </button>
+          </Button>
         </div>
       )}
 
       {showAll && totalCount > INITIAL_PRODUCTS_LIMIT && (
         <div className="mt-4 text-center">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => setShowAll(false)}
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+            className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
           >
             {t('common.showLess')}
-          </button>
+          </Button>
         </div>
       )}
 
       <div className="mt-4 border-t border-gray-200 pt-4 text-center dark:border-gray-700">
-        <button
+        <Button
+          variant="ghost"
           onClick={handleCollapse}
-          className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
           aria-label={t('company.productsCollapse')}
         >
           {t('company.productsCollapse')}
-        </button>
+        </Button>
       </div>
     </>
   );
