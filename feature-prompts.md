@@ -1,5 +1,11 @@
 # Feature Implementation Prompts
 
+> **WARNING: This document is outdated and contains inaccuracies.**
+> - Some features listed here have already been implemented (e.g., Allergen Warnings, Company Portfolio)
+> - Feature 2 (ATC Browser) is not feasible - the SAM API uses BCFI codes, not WHO ATC codes
+> - File paths and technical details may no longer be accurate
+> - Requires review before using as implementation guidance
+
 These prompts are ready to feed to an implementation agent. Each is self-contained with context, technical details, and acceptance criteria.
 
 ---
