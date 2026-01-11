@@ -10,7 +10,6 @@
 - Search medications by brand name, generic name, active ingredient, or CNK code
 - Fuzzy matching for common misspellings
 - Barcode/CNK scanning from medication packaging
-- Browse medications by therapeutic category (ATC classification)
 - Search results display relevant product information at a glance
 
 ### Generic ↔ Brand Mapping

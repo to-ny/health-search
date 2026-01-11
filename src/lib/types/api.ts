@@ -14,8 +14,6 @@ export interface MedicationSearchParams {
   cnk?: string;
   /** Search by ingredient name */
   ingredient?: string;
-  /** Search by ATC code */
-  atc?: string;
   /** Search by company actor number */
   companyActorNr?: string;
   /** Language for results */
@@ -77,42 +75,6 @@ export interface CompanySearchParams {
 export interface CompanySearchResponse {
   companies: Company[];
   totalCount: number;
-}
-
-/**
- * ATC classification item
- */
-export interface AtcClassification {
-  /** ATC code */
-  code: string;
-  /** Name */
-  name: string;
-  /** Description */
-  description?: string;
-  /** Parent code */
-  parentCode?: string;
-  /** Level (1-5) */
-  level: number;
-}
-
-/**
- * ATC search parameters
- */
-export interface AtcSearchParams {
-  /** ATC code to fetch */
-  code?: string;
-  /** Search by name */
-  query?: string;
-  /** Language */
-  language?: 'en' | 'nl' | 'fr' | 'de';
-}
-
-/**
- * ATC search response
- */
-export interface AtcSearchResponse {
-  classifications: AtcClassification[];
-  children?: AtcClassification[];
 }
 
 /**
