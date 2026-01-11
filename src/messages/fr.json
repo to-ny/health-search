@@ -213,8 +213,10 @@
     "allergensDetected": "Allergènes courants détectés",
     "activeIngredients": "Principes actifs",
     "noActiveIngredients": "Aucun principe actif répertorié",
-    "otherIngredients": "Autres ingrédients (excipients)",
+    "otherIngredients": "Excipients",
+    "fromSmPC": "extrait du RCP",
     "excludedIngredient": "Ingrédient exclu",
+    "excluded": "exclu",
     "potentialAllergen": "Allergène potentiel"
   },
   "badge": {
@@ -252,7 +254,9 @@
     "allergenMessage": "Ce médicament contient {allergen}, un allergène courant.",
     "excludedIngredientTitle": "Alerte ingrédient exclu",
     "excludedIngredientMessage": "Ce médicament contient des ingrédients que vous avez exclus : {ingredients}",
-    "dismiss": "Fermer l'avertissement"
+    "dismiss": "Fermer l'avertissement",
+    "expand": "Afficher les détails",
+    "collapse": "Masquer les détails"
   },
   "enum": {
     "status": {

@@ -213,8 +213,10 @@
     "allergensDetected": "Common Allergens Detected",
     "activeIngredients": "Active Ingredients",
     "noActiveIngredients": "No active ingredients listed",
-    "otherIngredients": "Other Ingredients (Excipients)",
+    "otherIngredients": "Other Ingredients",
+    "fromSmPC": "from SmPC",
     "excludedIngredient": "Excluded ingredient",
+    "excluded": "excluded",
     "potentialAllergen": "Potential allergen"
   },
   "badge": {
@@ -252,7 +254,9 @@
     "allergenMessage": "This medication contains {allergen}, which is a common allergen.",
     "excludedIngredientTitle": "Excluded Ingredient Alert",
     "excludedIngredientMessage": "This medication contains ingredients you have excluded: {ingredients}",
-    "dismiss": "Dismiss warning"
+    "dismiss": "Dismiss warning",
+    "expand": "Show details",
+    "collapse": "Hide details"
   },
   "enum": {
     "status": {

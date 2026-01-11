@@ -213,8 +213,10 @@
     "allergensDetected": "Veelvoorkomende allergenen gedetecteerd",
     "activeIngredients": "Werkzame stoffen",
     "noActiveIngredients": "Geen werkzame stoffen vermeld",
-    "otherIngredients": "Andere ingrediënten (hulpstoffen)",
+    "otherIngredients": "Hulpstoffen",
+    "fromSmPC": "uit de SKP",
     "excludedIngredient": "Uitgesloten ingrediënt",
+    "excluded": "uitgesloten",
     "potentialAllergen": "Potentieel allergeen"
   },
   "badge": {
@@ -252,7 +254,9 @@
     "allergenMessage": "Dit geneesmiddel bevat {allergen}, een veelvoorkomend allergeen.",
     "excludedIngredientTitle": "Waarschuwing uitgesloten ingrediënt",
     "excludedIngredientMessage": "Dit geneesmiddel bevat ingrediënten die u heeft uitgesloten: {ingredients}",
-    "dismiss": "Waarschuwing sluiten"
+    "dismiss": "Waarschuwing sluiten",
+    "expand": "Details tonen",
+    "collapse": "Details verbergen"
   },
   "enum": {
     "status": {

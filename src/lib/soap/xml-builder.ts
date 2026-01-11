@@ -214,7 +214,14 @@ export function buildFindCompanyRequest(params: {
 }
 
 /**
- * Builds a FindCommentedClassification (ATC) SOAP request
+ * Builds a FindCommentedClassification (ATC/BCFI) SOAP request
+ *
+ * Note: The SAM API uses the BCFI (Belgian Center for Pharmacotherapeutic Information)
+ * classification system, which uses numeric codes (e.g., "18" for Cardiovascular).
+ * This is different from the standard WHO ATC codes (e.g., "C" for Cardiovascular).
+ *
+ * The API requires either a classification code or a name search - you cannot
+ * retrieve all top-level categories without criteria.
  */
 export function buildFindAtcRequest(params: {
   atcCode?: string;
@@ -224,13 +231,20 @@ export function buildFindAtcRequest(params: {
   let body = '';
 
   if (params.atcCode) {
+    // Search by BCFI classification code (numeric string)
     body = `      <FindByCommentedClassification>
         <CommentedClassificationCode>${escapeXml(params.atcCode)}</CommentedClassificationCode>
       </FindByCommentedClassification>`;
   } else if (params.anyNamePart) {
+    // Search by name part (searches in title/content)
     body = `      <FindByCommentedClassification>
         <AnyNamePart>${escapeXml(params.anyNamePart)}</AnyNamePart>
       </FindByCommentedClassification>`;
+  } else {
+    // API requires at least one search criterion
+    // Return empty body which will cause a validation error
+    // The service layer should handle this case
+    body = '';
   }
 
   return buildSoapRequest({
