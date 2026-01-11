@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { getClientStaleTime } from '@/lib/cache';
 import type { MedicationSearchResponse, ErrorResponse } from '@/lib/types';
 
 interface UseCompanyProductsParams {
@@ -41,6 +42,6 @@ export function useCompanyProducts(params: UseCompanyProductsParams, enabled = t
     queryKey: getCompanyProductsQueryKey(params),
     queryFn: ({ signal }) => fetchCompanyProducts(params, signal),
     enabled: enabled && Boolean(params.actorNr),
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: getClientStaleTime('companyProducts'),
   });
 }
