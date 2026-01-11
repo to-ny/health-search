@@ -213,8 +213,10 @@
     "allergensDetected": "Häufige Allergene erkannt",
     "activeIngredients": "Wirkstoffe",
     "noActiveIngredients": "Keine Wirkstoffe aufgeführt",
-    "otherIngredients": "Sonstige Bestandteile (Hilfsstoffe)",
+    "otherIngredients": "Hilfsstoffe",
+    "fromSmPC": "aus der FI",
     "excludedIngredient": "Ausgeschlossener Inhaltsstoff",
+    "excluded": "ausgeschlossen",
     "potentialAllergen": "Potenzielles Allergen"
   },
   "badge": {
@@ -252,7 +254,9 @@
     "allergenMessage": "Dieses Arzneimittel enthält {allergen}, ein häufiges Allergen.",
     "excludedIngredientTitle": "Warnung: Ausgeschlossener Inhaltsstoff",
     "excludedIngredientMessage": "Dieses Arzneimittel enthält Inhaltsstoffe, die Sie ausgeschlossen haben: {ingredients}",
-    "dismiss": "Warnung schließen"
+    "dismiss": "Warnung schließen",
+    "expand": "Details anzeigen",
+    "collapse": "Details ausblenden"
   },
   "enum": {
     "status": {

@@ -9,7 +9,6 @@ import { MedicationCard } from '@/components/medication/MedicationCard';
 import { IngredientList } from '@/components/medication/IngredientList';
 import { ReimbursementInfo } from '@/components/medication/ReimbursementInfo';
 import { PriceComparison } from '@/components/medication/PriceComparison';
-import { AllergenWarnings } from '@/components/medication/AllergenWarnings';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { SkeletonCard, Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
@@ -129,9 +128,6 @@ export default function MedicationPage({ params }: MedicationPageProps) {
         {medication.name}
       </h1>
 
-      {/* Allergen warnings */}
-      <AllergenWarnings components={medication.components} />
-
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main content */}
         <div className="space-y-6 lg:col-span-2">
@@ -144,7 +140,7 @@ export default function MedicationPage({ params }: MedicationPageProps) {
               <CardTitle>{t('medication.ingredients')}</CardTitle>
             </CardHeader>
             <CardContent>
-              <IngredientList components={medication.components} showAllComponents={true} />
+              <IngredientList components={medication.components} showAllComponents={true} ampCode={medication.ampCode} />
             </CardContent>
           </Card>
 

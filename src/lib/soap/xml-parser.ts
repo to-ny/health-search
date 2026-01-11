@@ -556,15 +556,47 @@ export interface RawCompanyData {
 }
 
 export interface RawAtcClassificationData {
+  // Code is an attribute in the actual API response
+  '@_Code'?: string;
+  '@_StartDate'?: string;
+  // Legacy support for element-based code (used in some test fixtures)
   CommentedClassificationCode?: string;
   Title?: RawTextElement[];
   Content?: RawTextElement[];
   PosologyNote?: RawTextElement[];
   Url?: RawTextElement[];
+  // Nested child classifications
+  CommentedClassification?: RawAtcClassificationData[];
 }
 
 /**
- * Parses a FindCommentedClassification (ATC) SOAP response
+ * Recursively flattens nested CommentedClassification elements into a flat array
+ */
+function flattenClassifications(classifications: RawAtcClassificationData[]): RawAtcClassificationData[] {
+  const result: RawAtcClassificationData[] = [];
+
+  for (const classification of classifications) {
+    // Add the current classification (without nested children in output)
+    const { CommentedClassification: children, ...rest } = classification;
+    result.push(rest);
+
+    // Recursively flatten children
+    if (children && Array.isArray(children) && children.length > 0) {
+      result.push(...flattenClassifications(children));
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Parses a FindCommentedClassification (ATC/BCFI) SOAP response
+ *
+ * The SAM API returns classifications in a nested hierarchy. This parser
+ * flattens them into a single array for easier processing.
+ *
+ * Note: The API uses Code as an attribute (@_Code), but some test fixtures
+ * may use CommentedClassificationCode as an element for compatibility.
  */
 export function parseFindAtcResponse(xml: string): ParsedSoapResponse<RawAtcClassificationData[]> {
   try {
@@ -579,11 +611,11 @@ export function parseFindAtcResponse(xml: string): ParsedSoapResponse<RawAtcClas
       const fault = body[faultKey] as Record<string, unknown>;
       const detail = fault.detail as Record<string, unknown> | undefined;
 
-      // Check for "no results found" fault (code 1008)
+      // Check for "no results found" fault (code 1008 or 1012)
       const businessError = detail?.['ns2:BusinessError'] as Record<string, unknown> | undefined;
       const errorCode = businessError?.Code;
 
-      if (errorCode === 1008 || errorCode === '1008') {
+      if (errorCode === 1008 || errorCode === '1008' || errorCode === 1012 || errorCode === '1012') {
         return {
           success: true,
           data: [],
@@ -606,10 +638,14 @@ export function parseFindAtcResponse(xml: string): ParsedSoapResponse<RawAtcClas
 
     const response = body[responseKey] as Record<string, unknown>;
     const classifications = (response.CommentedClassification || []) as RawAtcClassificationData[];
+    const classificationsArray = Array.isArray(classifications) ? classifications : [classifications];
+
+    // Flatten nested classifications into a single array
+    const flattened = flattenClassifications(classificationsArray);
 
     return {
       success: true,
-      data: Array.isArray(classifications) ? classifications : [classifications],
+      data: flattened,
       searchDate: response['@_SearchDate'] as string,
       samId: response['@_SamId'] as string,
     };

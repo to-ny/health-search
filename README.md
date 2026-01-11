@@ -103,6 +103,17 @@ All medication data comes from Belgium's official [SAM v2 database](https://www.
 | Reimbursement | findReimbursement | RMB |
 | Companies | findCompany | Company |
 
+### Excipient Database
+
+Excipient (inactive ingredient) data is parsed from SmPC PDFs and stored in `src/data/excipients.json`. This data is not available from the SOAP API.
+
+```bash
+# Rebuild the database (~15 min, requires pdftotext)
+bun run scripts/build-excipient-database.ts
+```
+
+The script caches URL mappings in `data/amp-smpc-urls.json` to speed up subsequent runs.
+
 ### Caching Strategy
 
 | Data Type | Cache Duration |

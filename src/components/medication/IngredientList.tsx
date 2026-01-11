@@ -1,40 +1,47 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { findAllergens, type WarningLevel } from '@/lib/utils/allergens';
-import type { Ingredient, MedicationComponent } from '@/lib/types';
+import { useLanguage } from '@/components/LanguageSwitcher';
+import { getExcipients } from '@/lib/services/excipients';
+import { formatLanguage } from '@/lib/utils/format';
+import type { MedicationComponent } from '@/lib/types';
 
 interface IngredientListProps {
   components: MedicationComponent[];
-  excludedIngredients?: string[];
   showAllComponents?: boolean;
+  ampCode?: string;
 }
 
 export function IngredientList({
   components,
-  excludedIngredients = [],
   showAllComponents = false,
+  ampCode,
 }: IngredientListProps) {
   const t = useTranslations();
-  // Combine all ingredients or show by component
+  const [language] = useLanguage();
+
+  // Get ingredients from API
   const allIngredients = components.flatMap((c) => c.ingredients);
   const activeIngredients = allIngredients.filter((i) => i.type === 'ACTIVE_SUBSTANCE');
-  const excipients = allIngredients.filter((i) => i.type !== 'ACTIVE_SUBSTANCE');
 
-  // Find allergens
-  const allergens = findAllergens(allIngredients);
+  // Get excipients from database with language preference
+  const excipientResult = ampCode
+    ? getExcipients(ampCode, language as 'fr' | 'nl' | 'de' | 'en')
+    : null;
 
-  // Get form and route info from first component (usually only one)
+  // Get form and route info from first component
   const primaryComponent = components[0];
 
   return (
     <div className="space-y-6">
-      {/* Form & Administration - shown first as context */}
+      {/* Form & Administration */}
       {showAllComponents && primaryComponent && (
         <dl className="grid gap-3 sm:grid-cols-2">
           {primaryComponent.pharmaceuticalForm && (
             <div>
-              <dt className="text-sm text-gray-500 dark:text-gray-400">{t('ingredients.pharmaceuticalForm')}</dt>
+              <dt className="text-sm text-gray-500 dark:text-gray-400">
+                {t('ingredients.pharmaceuticalForm')}
+              </dt>
               <dd className="font-medium text-gray-900 dark:text-white">
                 {primaryComponent.pharmaceuticalForm.name}
               </dd>
@@ -42,7 +49,9 @@ export function IngredientList({
           )}
           {primaryComponent.routeOfAdministration && (
             <div>
-              <dt className="text-sm text-gray-500 dark:text-gray-400">{t('ingredients.routeOfAdmin')}</dt>
+              <dt className="text-sm text-gray-500 dark:text-gray-400">
+                {t('ingredients.routeOfAdmin')}
+              </dt>
               <dd className="font-medium text-gray-900 dark:text-white">
                 {primaryComponent.routeOfAdministration.name}
               </dd>
@@ -51,112 +60,78 @@ export function IngredientList({
         </dl>
       )}
 
-      {/* Allergen warnings - prominent at top */}
-      {allergens.length > 0 && (
-        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
-          <div className="flex items-start gap-3">
-            <span className="text-xl text-yellow-600" aria-hidden="true">⚠</span>
-            <div>
-              <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">
-                {t('ingredients.allergensDetected')}
-              </h4>
-              <p className="mt-1 text-sm text-yellow-700 dark:text-yellow-300">
-                {allergens.join(', ')}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Active ingredients */}
       <div>
         <h4 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
           {t('ingredients.activeIngredients')}
         </h4>
         {activeIngredients.length > 0 ? (
-          <ul className="space-y-2">
+          <ul className="space-y-1">
             {activeIngredients.map((ingredient, index) => (
-              <IngredientItem
+              <li
                 key={`active-${index}`}
-                ingredient={ingredient}
-                excludedIngredients={excludedIngredients}
-                allergens={allergens}
-              />
+                className="flex items-center justify-between py-1.5 px-2 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              >
+                <span className="text-gray-900 dark:text-white">
+                  {ingredient.substanceName}
+                </span>
+                {ingredient.strengthDescription && (
+                  <span className="ml-3 text-sm text-gray-500 dark:text-gray-400 flex-shrink-0">
+                    {ingredient.strengthDescription}
+                  </span>
+                )}
+              </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-gray-500 dark:text-gray-400">{t('ingredients.noActiveIngredients')}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('ingredients.noActiveIngredients')}
+          </p>
         )}
       </div>
 
-      {/* Excipients (if showing all) */}
-      {showAllComponents && excipients.length > 0 && (
-        <div>
-          <h4 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">
-            {t('ingredients.otherIngredients')}
-          </h4>
-          <ul className="space-y-2">
-            {excipients.map((ingredient, index) => (
-              <IngredientItem
-                key={`excipient-${index}`}
-                ingredient={ingredient}
-                excludedIngredients={excludedIngredients}
-                allergens={allergens}
-              />
-            ))}
-          </ul>
-        </div>
+      {/* Excipients from SmPC database - collapsible */}
+      {showAllComponents && excipientResult && (
+        <details className="group">
+          <summary className="flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 list-none">
+            <svg
+              className="h-4 w-4 flex-shrink-0 transition-transform group-open:rotate-90"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+            <span>{t('ingredients.otherIngredients')}</span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              ({t('ingredients.fromSmPC')})
+            </span>
+          </summary>
+
+          <div className="mt-3 max-h-64 overflow-y-auto rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+            {excipientResult.hasRequestedLanguage ? (
+              // User's preferred language is available - show single text
+              <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                {excipientResult.text}
+              </p>
+            ) : (
+              // Preferred language not available - show all with language badges
+              <div className="space-y-4">
+                {excipientResult.allTexts.map(({ language: lang, text }) => (
+                  <div key={lang}>
+                    <span className="mb-1.5 inline-flex items-center rounded bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                      {formatLanguage(lang)}
+                    </span>
+                    <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed">
+                      {text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </details>
       )}
     </div>
-  );
-}
-
-interface IngredientItemProps {
-  ingredient: Ingredient;
-  excludedIngredients: string[];
-  allergens: string[];
-}
-
-function IngredientItem({ ingredient, excludedIngredients, allergens }: IngredientItemProps) {
-  const t = useTranslations();
-  const isExcluded = excludedIngredients.some((ex) =>
-    ingredient.substanceName.toLowerCase().includes(ex.toLowerCase())
-  );
-
-  const isAllergen = allergens.some((allergen) =>
-    ingredient.substanceName.toLowerCase().includes(allergen.toLowerCase())
-  );
-
-  const warningLevel: WarningLevel = isExcluded ? 'danger' : isAllergen ? 'warning' : 'none';
-
-  return (
-    <li
-      className={`flex items-center justify-between rounded-lg border p-3 ${
-        warningLevel === 'danger'
-          ? 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
-          : warningLevel === 'warning'
-          ? 'border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20'
-          : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
-      }`}
-    >
-      <div className="flex items-center gap-2">
-        {warningLevel !== 'none' && (
-          <span
-            className={`text-base ${warningLevel === 'danger' ? 'text-red-500' : 'text-yellow-500'}`}
-            aria-label={warningLevel === 'danger' ? t('ingredients.excludedIngredient') : t('ingredients.potentialAllergen')}
-          >
-            ⚠
-          </span>
-        )}
-        <span className="font-medium text-gray-900 dark:text-white">
-          {ingredient.substanceName}
-        </span>
-      </div>
-      {ingredient.strengthDescription && (
-        <span className="ml-4 text-sm text-gray-600 dark:text-gray-400">
-          {ingredient.strengthDescription}
-        </span>
-      )}
-    </li>
   );
 }
