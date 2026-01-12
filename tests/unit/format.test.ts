@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatEnumValue, formatCountry, getCountryDisplay, formatLanguage, parsePackSize } from '@/lib/utils/format';
+import { formatEnumValue, formatCountry, getCountryDisplay, formatLanguage, parsePackSize, normalizeCnk } from '@/lib/utils/format';
 
 describe('formatEnumValue', () => {
   it('converts UPPERCASE to Title Case', () => {
@@ -221,6 +221,49 @@ describe('parsePackSize', () => {
       expect(result.displayRaw).toBe(false);
       expect(result.count).toBe(100);
       expect(result.unitKey).toBe('unit');
+    });
+  });
+});
+
+describe('normalizeCnk', () => {
+  describe('pads numeric CNK codes to 7 digits', () => {
+    it('pads 5-digit CNK to 7 digits', () => {
+      expect(normalizeCnk('14845')).toBe('0014845');
+    });
+
+    it('pads 6-digit CNK to 7 digits', () => {
+      expect(normalizeCnk('148450')).toBe('0148450');
+    });
+
+    it('pads 1-digit CNK to 7 digits', () => {
+      expect(normalizeCnk('1')).toBe('0000001');
+    });
+
+    it('keeps 7-digit CNK unchanged', () => {
+      expect(normalizeCnk('0014845')).toBe('0014845');
+      expect(normalizeCnk('1234567')).toBe('1234567');
+    });
+  });
+
+  describe('returns original string for non-CNK inputs', () => {
+    it('returns SAM codes unchanged', () => {
+      expect(normalizeCnk('SAM123456-01')).toBe('SAM123456-01');
+    });
+
+    it('returns codes longer than 7 digits unchanged', () => {
+      expect(normalizeCnk('12345678')).toBe('12345678');
+    });
+
+    it('returns alphanumeric strings unchanged', () => {
+      expect(normalizeCnk('abc123')).toBe('abc123');
+    });
+
+    it('returns empty string unchanged', () => {
+      expect(normalizeCnk('')).toBe('');
+    });
+
+    it('returns strings with special characters unchanged', () => {
+      expect(normalizeCnk('123-456')).toBe('123-456');
     });
   });
 });
