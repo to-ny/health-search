@@ -34,21 +34,30 @@ export function SearchResults({
   const t = useTranslations();
   const announcementRef = useRef<HTMLDivElement>(null);
   const previousCountRef = useRef<number | undefined>(undefined);
-  const [isSlowLoading, setIsSlowLoading] = useState(false);
+  // Track slow loading state - show warning after threshold while still loading
+  const loadingStartTimeRef = useRef<number | null>(null);
+  const [slowLoadingVisible, setSlowLoadingVisible] = useState(false);
 
-  // Track slow loading state
+  // Track when loading starts and show slow loading message after threshold
   useEffect(() => {
     if (!loading) {
-      setIsSlowLoading(false);
+      loadingStartTimeRef.current = null;
       return;
     }
 
+    loadingStartTimeRef.current = Date.now();
     const timer = setTimeout(() => {
-      setIsSlowLoading(true);
+      setSlowLoadingVisible(true);
     }, SLOW_LOADING_THRESHOLD_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      setSlowLoadingVisible(false);
+    };
   }, [loading]);
+
+  // Only show if still loading
+  const isSlowLoading = slowLoadingVisible && loading;
 
   // Announce search results to screen readers
   useEffect(() => {

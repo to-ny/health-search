@@ -20,9 +20,10 @@ test.describe('Search Page', () => {
     await expect(page.getByRole('searchbox')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Name' })).toBeVisible();
 
-    // Search updates URL
+    // Search updates URL after explicit submission
     const searchInput = page.getByRole('searchbox');
     await searchInput.fill('paracetamol');
+    await searchInput.press('Enter');
     await page.waitForURL(/\/search\?q=paracetamol/, { timeout: 5000 });
   });
 
@@ -66,11 +67,12 @@ test.describe('Search Page', () => {
     await page.getByRole('button', { name: /Name/i }).click();
     await page.getByRole('option', { name: /Ingredient/i }).click();
 
-    // Type a search query to trigger URL update (search triggers on input)
+    // Type a search query and submit to trigger URL update
     const searchInput = page.getByRole('searchbox');
     await searchInput.fill('paracetamol');
+    await searchInput.press('Enter');
 
-    // Wait for debounced search to update URL - company should be cleared
+    // Wait for search to update URL - company should be cleared for ingredient search
     await page.waitForURL(/\/search\?q=paracetamol&type=ingredient$/);
     await expect(page.getByText('#01995')).not.toBeVisible();
   });
@@ -93,6 +95,7 @@ test.describe('Company Detail to Search Flow', () => {
     await page.goto('/companies');
     const searchInput = page.getByRole('searchbox');
     await searchInput.fill('pharma');
+    await searchInput.press('Enter');
 
     // Wait for results
     await page.waitForSelector('[href^="/companies/"]', { timeout: 10000 });
