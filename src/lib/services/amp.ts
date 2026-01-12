@@ -27,6 +27,7 @@ import type {
   MedicationSearchResult,
   ApiResponse,
 } from '@/lib/types';
+import { normalizeCnk } from '@/lib/utils/format';
 
 /**
  * Transforms raw ingredient data
@@ -239,14 +240,17 @@ export async function getAmpDetail(
   language = 'en'
 ): Promise<ApiResponse<Medication>> {
   try {
+    // Normalize CNK codes (pad with leading zeros to 7 digits)
+    const normalizedId = normalizeCnk(id);
+
     // Determine if it's a CNK (numeric) or AMP code (SAM prefix)
-    const isCnk = /^\d{7}$/.test(id);
-    const isAmpCode = id.startsWith('SAM');
+    const isCnk = /^\d{7}$/.test(normalizedId);
+    const isAmpCode = normalizedId.startsWith('SAM');
 
     const soapXml = buildFindAmpRequest({
-      cnk: isCnk ? id : undefined,
-      ampCode: isAmpCode ? id : undefined,
-      anyNamePart: !isCnk && !isAmpCode ? id : undefined,
+      cnk: isCnk ? normalizedId : undefined,
+      ampCode: isAmpCode ? normalizedId : undefined,
+      anyNamePart: !isCnk && !isAmpCode ? normalizedId : undefined,
       language,
     });
 
@@ -267,7 +271,7 @@ export async function getAmpDetail(
     if (isCnk && parsed.data.length > 1) {
       const found = parsed.data.find((a) =>
         a.Ampp?.some((ampp) =>
-          ampp.Dmpp?.some((dmpp) => dmpp['@_Code'] === id)
+          ampp.Dmpp?.some((dmpp) => dmpp['@_Code'] === normalizedId)
         )
       );
       if (found) amp = found;

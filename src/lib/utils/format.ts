@@ -3,6 +3,26 @@
  */
 
 /**
+ * CNK code length - Belgian medication identifiers are 7 digits
+ */
+const CNK_CODE_LENGTH = 7;
+
+/**
+ * Normalizes a CNK code by padding with leading zeros to 7 digits
+ * Returns the original string if it's not a valid numeric CNK input
+ *
+ * @param id - The CNK code to normalize (e.g., "14845" or "0014845")
+ * @returns Normalized 7-digit CNK code (e.g., "0014845") or original string if not numeric
+ */
+export function normalizeCnk(id: string): string {
+  // Only normalize if the input is purely numeric and not longer than 7 digits
+  if (/^\d{1,7}$/.test(id)) {
+    return id.padStart(CNK_CODE_LENGTH, '0');
+  }
+  return id;
+}
+
+/**
  * Converts UPPERCASE_ENUM values to readable Title Case
  * Examples:
  *   AUTHORIZED -> Authorized

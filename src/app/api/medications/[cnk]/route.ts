@@ -3,6 +3,7 @@ import { getAmpDetail, getAmpsByVmp } from '@/lib/services/amp';
 import { getVmpDetail } from '@/lib/services/vmp';
 import { getReimbursementByCnk } from '@/lib/services/reimbursement';
 import { createCacheHeaders } from '@/lib/cache';
+import { normalizeCnk } from '@/lib/utils/format';
 import type { MedicationDetailResponse, ErrorResponse } from '@/lib/types';
 
 // Medication data: 24 hour revalidation (REVALIDATE_TIMES.CORE_DATA)
@@ -20,12 +21,15 @@ export async function GET(
   request: NextRequest,
   { params }: RouteParams
 ): Promise<NextResponse<MedicationDetailResponse | ErrorResponse>> {
-  const { cnk: id } = await params;
+  const { cnk: rawId } = await params;
   const searchParams = request.nextUrl.searchParams;
 
   const language = (searchParams.get('lang') as 'en' | 'nl' | 'fr' | 'de') || 'en';
   const includeReimbursement = searchParams.get('reimbursement') !== 'false';
   const includeEquivalents = searchParams.get('equivalents') !== 'false';
+
+  // Normalize CNK codes (pad with leading zeros to 7 digits)
+  const id = normalizeCnk(rawId);
 
   // Validate ID format
   const isCnk = /^\d{7}$/.test(id);
