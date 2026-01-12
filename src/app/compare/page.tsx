@@ -90,7 +90,7 @@ function CompareContent() {
           <SearchBar
             onSearch={handleSearch}
             loading={isSearching}
-            initialType="cnk"
+            initialType="name"
           />
           <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
             {t('compare.searchHint')}
