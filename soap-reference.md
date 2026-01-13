@@ -322,24 +322,29 @@ Get reimbursement information for a medication package.
 
 ```xml
 <FindReimbursementResponse SearchDate="2025-01-11" SamId="...">
-  <ReimbursementContext DeliveryEnvironment="P" Code="0012345" CodeType="CNK">
-    <ReimbursementCriterion>
-      <Category>B</Category>
-      <Code>0001070</Code>
-    </ReimbursementCriterion>
-    <Copayment Regimen="REGULAR">
-      <FeeAmount>2.50</FeeAmount>
-      <ReimbursementAmount>8.00</ReimbursementAmount>
-    </Copayment>
-    <Copayment Regimen="PREFERENTIAL">
+  <ReimbursementContexts DeliveryEnvironment="P" Code="0012345" CodeType="CNK"
+      LegalReferencePath="RD20180201-II-70000" StartDate="2025-01-01">
+    <ReimbursementCriterion Category="B" Code="255"/>
+    <Copayment RegimeType="1" StartDate="2025-01-01">
       <FeeAmount>1.00</FeeAmount>
-      <ReimbursementAmount>9.50</ReimbursementAmount>
+    </Copayment>
+    <Copayment RegimeType="2" StartDate="2025-01-01">
+      <FeeAmount>2.50</FeeAmount>
     </Copayment>
     <ReferenceBasePrice>10.50</ReferenceBasePrice>
     <ReimbursementBasePrice>10.50</ReimbursementBasePrice>
-  </ReimbursementContext>
+  </ReimbursementContexts>
 </FindReimbursementResponse>
 ```
+
+**Key Response Fields:**
+
+- `ReimbursementContexts` - Note: plural element name
+- `LegalReferencePath` - Links to Chapter IV paragraph details. Format: `RD{date}-{chapter}-{paragraph}`
+  - Chapter IV medications have `-IV-` in the path (e.g., `RD20180201-IV-8870000`)
+  - Other chapters: `-I-`, `-II-`, `-III-` etc.
+- `ReimbursementCriterion` - Attributes: `Category` (A/B/C/Cx/Cs) and `Code` (numeric)
+- `Copayment` - Attribute `RegimeType`: 1=Preferential, 2=Regular
 
 ---
 
@@ -386,6 +391,93 @@ Search for pharmaceutical companies.
   </Company>
 </FindCompanyResponse>
 ```
+
+---
+
+### FindChapterIVParagraph
+
+Get Chapter IV (prior authorization) paragraph details for restricted medications.
+
+**Endpoint:** DICS v5 (same as other operations)
+
+**Search Methods:**
+
+- **FindByDmpp** - Search by CNK code (requires `DeliveryEnvironment` + `Code` + `CodeType`)
+- **FindByParagraphName** - Search by chapter and paragraph name (`ChapterName` + `ParagraphName`)
+- **FindByLegalReferencePath** - Search by legal reference path string
+
+**Special Handling:** When no Chapter IV paragraph exists for the medication, the API returns a SOAP Fault with code `1016`. This should be treated as an empty result, not an error.
+
+**Example Request (by CNK):**
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+               xmlns:ns="urn:be:fgov:ehealth:dics:protocol:v5">
+  <soap:Header/>
+  <soap:Body>
+    <ns:FindChapterIVParagraphRequest IssueInstant="2025-01-11T10:00:00.000Z">
+      <FindByDmpp>
+        <DeliveryEnvironment>P</DeliveryEnvironment>
+        <Code>3621109</Code>
+        <CodeType>CNK</CodeType>
+      </FindByDmpp>
+    </ns:FindChapterIVParagraphRequest>
+  </soap:Body>
+</soap:Envelope>
+```
+
+**Response Structure:**
+
+```xml
+<FindChapterIVParagraphResponse SearchDate="2025-01-11" SamId="...">
+  <Paragraph ChapterName="IV" ParagraphName="10680000" StartDate="2025-01-01">
+    <LegalReferencePath>RD20180201-IV-10680000</LegalReferencePath>
+    <CreatedTimestamp>2024-12-20T18:05:25.071+01:00</CreatedTimestamp>
+    <KeyString>
+      <Text xml:lang="fr">Le traitement de la rectocolite...</Text>
+      <Text xml:lang="nl">Behandeling van ernstige colitis ulcerosa...</Text>
+    </KeyString>
+    <AgreementType>E</AgreementType>
+    <PublicationDate>2024-12-31</PublicationDate>
+    <ModificationDate>2025-01-01</ModificationDate>
+    <ParagraphVersion>44</ParagraphVersion>
+    <ModificationStatus>E</ModificationStatus>
+    <Exclusion ExclusionType="J" IdentifierNum="11070200" StartDate="2021-12-01">
+      <!-- Excluded paragraph references -->
+    </Exclusion>
+    <Verse VerseSeq="1" StartDate="2025-01-01">
+      <VerseNum>103264</VerseNum>
+      <VerseSeqParent>0</VerseSeqParent>
+      <VerseLevel>1</VerseLevel>
+      <CheckBoxInd>false</CheckBoxInd>
+      <Text>
+        <Text xml:lang="fr">Paragraphe 10680000</Text>
+        <Text xml:lang="nl">Paragraaf 10680000</Text>
+      </Text>
+      <RequestType>N</RequestType>
+      <AgreementTerm>
+        <Quantity>12</Quantity>
+        <Unit>M</Unit>
+      </AgreementTerm>
+      <ModificationStatus>E</ModificationStatus>
+    </Verse>
+  </Paragraph>
+</FindChapterIVParagraphResponse>
+```
+
+**Key Response Fields:**
+
+- `ChapterName` / `ParagraphName` - Identifies the specific paragraph (e.g., "IV" / "10680000")
+- `LegalReferencePath` - Unique identifier linking to reimbursement contexts
+- `KeyString` - Summary of the indication/condition (multilingual)
+- `AgreementType` - Authorization model (E=Electronic, etc.)
+- `Verse` - Structured legislation text with hierarchy:
+  - `VerseLevel` - Depth in hierarchy (1=top level)
+  - `VerseSeqParent` - Parent verse for building tree structure
+  - `Text` - The actual requirement text (multilingual)
+  - `RequestType` - N=New request, P=Prolongation, null=both
+  - `AgreementTerm` - Validity period (Quantity + Unit: D/W/M/Y)
 
 ---
 
@@ -450,7 +542,6 @@ The following endpoints are listed in the SAM service catalog but have not been 
 
 - **FindAmpp** - Search packages directly (workaround: use FindAmp)
 - **FindVtm** - Search active substances (workaround: use FindVmp, which includes VTM info)
-- **FindChapterIV** - Chapter IV restrictions (requires dics/legacy endpoint)
 - **FindIngredient** - Search ingredients (workaround: use FindAmp/FindVmp with ingredient parameter)
 - **FindFormula** - Magistral preparations (requires compounding endpoint)
 
@@ -484,6 +575,7 @@ The following endpoints are listed in the SAM service catalog but have not been 
 - **1004** - No company found for given criteria. Treat as empty result set, not an error.
 - **1008** - No results found. Treat as empty result set, not an error.
 - **1012** - No classification found. Treat as empty result set, not an error.
+- **1016** - No Chapter IV paragraph found. Treat as empty result set, not an error.
 
 ### Retry Logic
 
@@ -496,6 +588,8 @@ Recommended: automatic retry with exponential backoff (timeout 30s, 3 retries).
 ### Multilingual Fields
 
 Most text fields support four languages: `en`, `nl`, `fr`, `de`
+
+**Note:** Language availability varies by data - not all languages are present for every field. The UI should handle missing translations gracefully.
 
 ```xml
 <Name xml:lang="nl">Nederlandse naam</Name>

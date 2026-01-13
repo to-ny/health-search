@@ -25,11 +25,14 @@ const parser = new XMLParser({
       'VmpComponent',
       'RealActualIngredient',
       'VirtualIngredient',
-      'ReimbursementContext',
+      'ReimbursementContexts',
       'Copayment',
       'Text',
       'Atc',
       'CommentedClassification',
+      'Paragraph',
+      'Verse',
+      'Exclusion',
     ];
     return arrayElements.includes(name);
   },
@@ -321,7 +324,7 @@ export function parseFindReimbursementResponse(xml: string): ParsedSoapResponse<
     }
 
     const response = body[responseKey] as Record<string, unknown>;
-    const contexts = (response.ReimbursementContext || []) as RawReimbursementData[];
+    const contexts = (response.ReimbursementContexts || []) as RawReimbursementData[];
 
     return {
       success: true,
@@ -556,12 +559,13 @@ export interface RawReimbursementData {
   '@_Code'?: string;
   '@_CodeType'?: string;
   '@_StartDate'?: string;
+  '@_LegalReferencePath'?: string;
   ReimbursementCriterion?: {
-    Category?: string;
-    Code?: string;
+    '@_Category'?: string;
+    '@_Code'?: string;
   };
   Copayment?: Array<{
-    '@_Regimen'?: string;
+    '@_RegimeType'?: string;
     FeeAmount?: number;
     ReimbursementAmount?: number;
   }>;
@@ -666,6 +670,112 @@ export function parseFindAtcResponse(xml: string): ParsedSoapResponse<RawAtcClas
     return {
       success: true,
       data: flattened,
+      searchDate: response['@_SearchDate'] as string,
+      samId: response['@_SamId'] as string,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: { code: 'PARSE_ERROR', message: error instanceof Error ? error.message : 'Unknown error' },
+    };
+  }
+}
+
+// Chapter IV Types
+
+export interface RawChapterIVVerseData {
+  '@_VerseSeq'?: number;
+  '@_StartDate'?: string;
+  '@_EndDate'?: string;
+  VerseNum?: number;
+  VerseSeqParent?: number;
+  VerseLevel?: number;
+  CheckBoxInd?: boolean;
+  MinCheckNum?: number;
+  Text?: { Text?: RawTextElement[] };
+  RequestType?: string;
+  AgreementTerm?: {
+    Quantity?: number;
+    Unit?: string;
+  };
+  ModificationStatus?: string;
+}
+
+export interface RawChapterIVParagraphData {
+  '@_ChapterName'?: string;
+  '@_ParagraphName'?: string;
+  '@_StartDate'?: string;
+  '@_EndDate'?: string;
+  LegalReferencePath?: string;
+  CreatedTimestamp?: string;
+  CreatedUserId?: string;
+  KeyString?: { Text?: RawTextElement[] };
+  AgreementType?: string;
+  ProcessType?: number;
+  LegalReference?: string;
+  PublicationDate?: string;
+  ModificationDate?: string;
+  ParagraphVersion?: number;
+  ModificationStatus?: string;
+  Exclusion?: Array<{
+    '@_ExclusionType'?: string;
+    '@_IdentifierNum'?: string;
+    '@_StartDate'?: string;
+  }>;
+  Verse?: RawChapterIVVerseData[];
+}
+
+/**
+ * Parses a FindChapterIVParagraph SOAP response
+ * Returns Chapter IV paragraph details for restricted medications.
+ * Note: The SAM API returns a SOAP Fault with code 1016 when no paragraphs are found.
+ * We treat this as an empty result set rather than an error.
+ */
+export function parseFindChapterIVResponse(xml: string): ParsedSoapResponse<RawChapterIVParagraphData[]> {
+  try {
+    const body = extractSoapBody(xml);
+    if (!body) {
+      return { success: false, error: { code: 'PARSE_ERROR', message: 'Invalid SOAP response' } };
+    }
+
+    // Check for SOAP fault
+    const faultKey = Object.keys(body).find((k) => k.includes('Fault'));
+    if (faultKey) {
+      const fault = body[faultKey] as Record<string, unknown>;
+      const detail = fault.detail as Record<string, unknown> | undefined;
+
+      // Check if this is a "no results found" fault (code 1016)
+      const businessError = detail?.['ns2:BusinessError'] as Record<string, unknown> | undefined;
+      const errorCode = businessError?.Code;
+
+      if (errorCode === 1016 || errorCode === '1016') {
+        // Not an error - just no Chapter IV data exists for this medication
+        return {
+          success: true,
+          data: [],
+        };
+      }
+
+      return {
+        success: false,
+        error: {
+          code: 'SOAP_FAULT',
+          message: String(fault.faultstring || fault.detail || 'Unknown SOAP fault'),
+        },
+      };
+    }
+
+    const responseKey = Object.keys(body).find((k) => k.includes('FindChapterIVParagraphResponse'));
+    if (!responseKey) {
+      return { success: false, error: { code: 'NO_RESPONSE', message: 'No FindChapterIVParagraphResponse found' } };
+    }
+
+    const response = body[responseKey] as Record<string, unknown>;
+    const paragraphs = (response.Paragraph || []) as RawChapterIVParagraphData[];
+
+    return {
+      success: true,
+      data: Array.isArray(paragraphs) ? paragraphs : [paragraphs],
       searchDate: response['@_SearchDate'] as string,
       samId: response['@_SamId'] as string,
     };

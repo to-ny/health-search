@@ -202,7 +202,21 @@
     "referencePrice": "Referentieprijs: {value}",
     "referenceBase": "Referentiebasis: {value}",
     "otherSettings": "Andere instellingen (ziekenhuis, residentieel)",
-    "patientAmount": "Patiënt: {amount}"
+    "patientAmount": "Patiënt: {amount}",
+    "varies": "Variabel",
+    "categories": {
+      "A": "Categorie A - Essentiële geneesmiddelen",
+      "B": "Categorie B - Nuttige geneesmiddelen",
+      "C": "Categorie C - Comfortgeneesmiddelen",
+      "Cs": "Categorie Cs - Comfort (speciaal)",
+      "Cx": "Categorie Cx - Uitzonderingscategorie",
+      "D": "Categorie D - Niet terugbetaald"
+    },
+    "regimen": {
+      "PREFERENTIAL": "Verhoogde tegemoetkoming",
+      "REGULAR": "Gewone tegemoetkoming",
+      "UNKNOWN": "Onbekend"
+    }
   },
   "ingredients": {
     "pharmaceuticalForm": "Farmaceutische vorm",
@@ -223,7 +237,25 @@
     "requiresPriorAuth": "Dit geneesmiddel vereist voorafgaande toestemming van uw ziekenfonds",
     "doctorMustSubmit": "Uw arts moet een aanvraag indienen voordat u terugbetaling kunt ontvangen",
     "learnMore": "Meer info over Hoofdstuk IV",
-    "learnMoreAriaLabel": "Meer informatie over Hoofdstuk IV voorafgaande toestemmingsvereisten (opent in nieuw tabblad)"
+    "learnMoreAriaLabel": "Meer informatie over Hoofdstuk IV voorafgaande toestemmingsvereisten (opent in nieuw tabblad)",
+    "viewRequirements": "Machtigingsvereisten bekijken",
+    "hideRequirements": "Vereisten verbergen",
+    "loadingDetails": "Machtigingsdetails laden...",
+    "errorLoadingDetails": "Kan machtigingsdetails niet laden",
+    "noDetails": "Geen gedetailleerde vereisten beschikbaar",
+    "paragraph": "Paragraaf {name}",
+    "indication": "Indicatie",
+    "agreementType": "Type overeenkomst",
+    "requirements": "Vereisten",
+    "firstRequest": "Eerste aanvraag",
+    "renewal": "Verlenging",
+    "validFor": "Geldig voor {quantity} {unit}",
+    "validityUnits": {
+      "D": "{quantity, plural, =1 {dag} other {dagen}}",
+      "W": "{quantity, plural, =1 {week} other {weken}}",
+      "M": "{quantity, plural, =1 {maand} other {maanden}}",
+      "Y": "{quantity, plural, =1 {jaar} other {jaar}}"
+    }
   },
   "acronym": {
     "CNK": "Code National Kode - Belgische nationale productcode (7 cijfers)",

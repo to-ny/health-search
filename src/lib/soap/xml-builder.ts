@@ -270,3 +270,42 @@ export function buildFindAtcRequest(params: {
     body,
   });
 }
+
+/**
+ * Builds a FindChapterIVParagraph SOAP request
+ * For querying Chapter IV (prior authorization) paragraph details
+ */
+export function buildFindChapterIVRequest(params: {
+  cnk?: string;
+  chapterName?: string;
+  paragraphName?: string;
+  legalReferencePath?: string;
+  language?: string;
+  searchDate?: string;
+}): string {
+  let body = '';
+
+  if (params.cnk) {
+    // FindByDmpp: DeliveryEnvironment, Code, CodeType (order matters per XSD)
+    body = `      <FindByDmpp>
+        <DeliveryEnvironment>P</DeliveryEnvironment>
+        <Code>${escapeXml(params.cnk)}</Code>
+        <CodeType>CNK</CodeType>
+      </FindByDmpp>`;
+  } else if (params.chapterName && params.paragraphName) {
+    // FindByParagraphName
+    body = `      <FindByParagraphName>
+        <ChapterName>${escapeXml(params.chapterName)}</ChapterName>
+        <ParagraphName>${escapeXml(params.paragraphName)}</ParagraphName>
+      </FindByParagraphName>`;
+  } else if (params.legalReferencePath) {
+    // FindByLegalReferencePath
+    body = `      <FindByLegalReferencePath>${escapeXml(params.legalReferencePath)}</FindByLegalReferencePath>`;
+  }
+
+  return buildSoapRequest({
+    operation: 'FindChapterIVParagraph',
+    searchDate: params.searchDate,
+    body,
+  });
+}

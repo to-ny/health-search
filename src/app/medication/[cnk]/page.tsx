@@ -195,7 +195,7 @@ export default function MedicationPage({ params }: MedicationPageProps) {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* Reimbursement */}
-          <ReimbursementInfo reimbursements={reimbursement || []} medicationPrice={price} />
+          <ReimbursementInfo reimbursements={reimbursement || []} medicationPrice={price} cnk={cnk} />
 
           {/* Package information */}
           {medication.packages.length > 0 && (

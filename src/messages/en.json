@@ -202,7 +202,21 @@
     "referencePrice": "Reference price: {value}",
     "referenceBase": "Reference base: {value}",
     "otherSettings": "Other settings (hospital, residential)",
-    "patientAmount": "Patient: {amount}"
+    "patientAmount": "Patient: {amount}",
+    "varies": "Varies",
+    "categories": {
+      "A": "Category A - Essential medications",
+      "B": "Category B - Useful medications",
+      "C": "Category C - Comfort medications",
+      "Cs": "Category Cs - Comfort (special)",
+      "Cx": "Category Cx - Exception category",
+      "D": "Category D - Not reimbursed"
+    },
+    "regimen": {
+      "PREFERENTIAL": "Preferential",
+      "REGULAR": "Regular",
+      "UNKNOWN": "Unknown"
+    }
   },
   "ingredients": {
     "pharmaceuticalForm": "Pharmaceutical Form",
@@ -223,7 +237,25 @@
     "requiresPriorAuth": "This medication requires prior authorization from your health insurer",
     "doctorMustSubmit": "Your doctor must submit a request before you can receive reimbursement",
     "learnMore": "Learn more about Chapter IV",
-    "learnMoreAriaLabel": "Learn more about Chapter IV prior authorization requirements (opens in new tab)"
+    "learnMoreAriaLabel": "Learn more about Chapter IV prior authorization requirements (opens in new tab)",
+    "viewRequirements": "View authorization requirements",
+    "hideRequirements": "Hide requirements",
+    "loadingDetails": "Loading authorization details...",
+    "errorLoadingDetails": "Unable to load authorization details",
+    "noDetails": "No detailed requirements available",
+    "paragraph": "Paragraph {name}",
+    "indication": "Indication",
+    "agreementType": "Agreement type",
+    "requirements": "Requirements",
+    "firstRequest": "First request",
+    "renewal": "Renewal",
+    "validFor": "Valid for {quantity} {unit}",
+    "validityUnits": {
+      "D": "{quantity, plural, =1 {day} other {days}}",
+      "W": "{quantity, plural, =1 {week} other {weeks}}",
+      "M": "{quantity, plural, =1 {month} other {months}}",
+      "Y": "{quantity, plural, =1 {year} other {years}}"
+    }
   },
   "acronym": {
     "CNK": "Code National Kode - Belgian national product code (7 digits)",
