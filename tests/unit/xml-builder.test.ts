@@ -4,6 +4,7 @@ import {
   buildFindVmpRequest,
   buildFindReimbursementRequest,
   buildFindCompanyRequest,
+  buildFindChapterIVRequest,
 } from '@/lib/soap/xml-builder';
 
 describe('XML Builder', () => {
@@ -92,6 +93,52 @@ describe('XML Builder', () => {
       const xml = buildFindCompanyRequest({ companyActorNr: '12345' });
 
       expect(xml).toContain('<CompanyActorNr>12345</CompanyActorNr>');
+    });
+  });
+
+  describe('buildFindChapterIVRequest', () => {
+    it('should build request with CNK code', () => {
+      const xml = buildFindChapterIVRequest({ cnk: '1234567' });
+
+      expect(xml).toContain('FindChapterIVParagraphRequest');
+      expect(xml).toContain('<FindByDmpp>');
+      expect(xml).toContain('<DeliveryEnvironment>P</DeliveryEnvironment>');
+      expect(xml).toContain('<Code>1234567</Code>');
+      expect(xml).toContain('<CodeType>CNK</CodeType>');
+    });
+
+    it('should build request with paragraph name', () => {
+      const xml = buildFindChapterIVRequest({
+        chapterName: 'IV',
+        paragraphName: '10680000',
+      });
+
+      expect(xml).toContain('<FindByParagraphName>');
+      expect(xml).toContain('<ChapterName>IV</ChapterName>');
+      expect(xml).toContain('<ParagraphName>10680000</ParagraphName>');
+    });
+
+    it('should build request with legal reference path', () => {
+      const xml = buildFindChapterIVRequest({
+        legalReferencePath: 'RD20180201-IV-10680000',
+      });
+
+      expect(xml).toContain('<FindByLegalReferencePath>RD20180201-IV-10680000</FindByLegalReferencePath>');
+    });
+
+    it('should include IssueInstant attribute', () => {
+      const xml = buildFindChapterIVRequest({ cnk: '1234567' });
+
+      expect(xml).toMatch(/IssueInstant="[^"]+"/);
+    });
+
+    it('should escape special XML characters', () => {
+      const xml = buildFindChapterIVRequest({ legalReferencePath: 'test<>&"' });
+
+      expect(xml).toContain('&lt;');
+      expect(xml).toContain('&gt;');
+      expect(xml).toContain('&amp;');
+      expect(xml).toContain('&quot;');
     });
   });
 });

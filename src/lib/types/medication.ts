@@ -198,6 +198,8 @@ export interface Reimbursement {
   cnk: string;
   /** Delivery environment */
   deliveryEnvironment: 'P' | 'H';
+  /** Legal reference path (e.g., "RD20180201-IV-8870000") - contains "IV" for Chapter IV */
+  legalReferencePath?: string;
   /** Reimbursement criterion */
   criterion?: {
     category: string;
@@ -274,8 +276,6 @@ export interface MedicationSearchResult {
   price?: number;
   /** Whether it's reimbursed */
   isReimbursed: boolean;
-  /** Whether it requires Chapter IV prior authorization (if known) */
-  isChapterIV?: boolean;
   /** Status */
   status: string;
   /** Pack display value */
@@ -297,4 +297,56 @@ export interface ApiResponse<T> {
     samId?: string;
     totalResults?: number;
   };
+}
+
+/**
+ * Chapter IV paragraph details for restricted medications
+ */
+export interface ChapterIVParagraph {
+  /** Chapter name (e.g., "IV") */
+  chapterName: string;
+  /** Paragraph identifier (e.g., "10680000") */
+  paragraphName: string;
+  /** Unique legal reference path */
+  legalReferencePath: string;
+  /** Summary of the indication/condition */
+  keyString?: LocalizedText[];
+  /** Authorization model type */
+  agreementType?: string;
+  /** Date first published */
+  publicationDate?: string;
+  /** Date last modified */
+  modificationDate?: string;
+  /** Version number */
+  paragraphVersion?: number;
+  /** Start date of validity */
+  startDate?: string;
+  /** End date of validity (if no longer active) */
+  endDate?: string;
+  /** Structured legislation text */
+  verses: ChapterIVVerse[];
+}
+
+/**
+ * A verse (section) of Chapter IV legislation text
+ */
+export interface ChapterIVVerse {
+  /** Sequence number within paragraph */
+  verseSeq: number;
+  /** Unique verse number */
+  verseNum: number;
+  /** Parent verse sequence (0 = top level) */
+  verseSeqParent: number;
+  /** Depth in hierarchy (1 = top level) */
+  verseLevel: number;
+  /** The legislation text */
+  text: LocalizedText[];
+  /** Request type: N=New, P=Prolongation, null=both */
+  requestType?: string;
+  /** Validity period quantity */
+  agreementTermQuantity?: number;
+  /** Validity period unit: D=Days, W=Weeks, M=Months, Y=Years */
+  agreementTermUnit?: string;
+  /** Start date of validity */
+  startDate?: string;
 }

@@ -49,3 +49,17 @@ Run all tests: `bun run test` (required before committing)
 - Location: `tests/e2e/*.spec.ts`
 - Tests run against production build
 - Add tests for: user flows, UI behavior, accessibility
+
+## Internationalization (i18n)
+
+This app supports 4 languages: English, Dutch (nl), French (fr), German (de).
+
+### Principles
+
+1. **All user-facing text must be translated** - Never hardcode strings in components. Use the translation system for everything users see.
+
+2. **API data uses a fallback pattern** - SAM API text availability varies by data and is not guaranteed for any language. When displaying API text:
+   - If available in selected language → show just that text
+   - If NOT available → show all available translations with language badges
+
+   This ensures users always see the information, regardless of which languages the API returned.

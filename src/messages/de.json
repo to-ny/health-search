@@ -205,7 +205,21 @@
     "referencePrice": "Referenzpreis: {value}",
     "referenceBase": "Referenzbasis: {value}",
     "otherSettings": "Andere Einrichtungen (Krankenhaus, Pflegeheim)",
-    "patientAmount": "Patient: {amount}"
+    "patientAmount": "Patient: {amount}",
+    "varies": "Variabel",
+    "categories": {
+      "A": "Kategorie A - Essentielle Arzneimittel",
+      "B": "Kategorie B - Nützliche Arzneimittel",
+      "C": "Kategorie C - Komfortarzneimittel",
+      "Cs": "Kategorie Cs - Komfort (speziell)",
+      "Cx": "Kategorie Cx - Ausnahmekategorie",
+      "D": "Kategorie D - Nicht erstattet"
+    },
+    "regimen": {
+      "PREFERENTIAL": "Erhöhte Vergütung",
+      "REGULAR": "Normale Vergütung",
+      "UNKNOWN": "Unbekannt"
+    }
   },
   "ingredients": {
     "pharmaceuticalForm": "Darreichungsform",
@@ -226,7 +240,25 @@
     "requiresPriorAuth": "Dieses Arzneimittel erfordert eine vorherige Genehmigung Ihrer Krankenkasse",
     "doctorMustSubmit": "Ihr Arzt muss einen Antrag stellen, bevor Sie eine Erstattung erhalten können",
     "learnMore": "Mehr über Kapitel IV erfahren",
-    "learnMoreAriaLabel": "Mehr über die Anforderungen zur vorherigen Genehmigung von Kapitel IV erfahren (öffnet in neuem Tab)"
+    "learnMoreAriaLabel": "Mehr über die Anforderungen zur vorherigen Genehmigung von Kapitel IV erfahren (öffnet in neuem Tab)",
+    "viewRequirements": "Genehmigungsanforderungen anzeigen",
+    "hideRequirements": "Anforderungen ausblenden",
+    "loadingDetails": "Genehmigungsdetails werden geladen...",
+    "errorLoadingDetails": "Genehmigungsdetails konnten nicht geladen werden",
+    "noDetails": "Keine detaillierten Anforderungen verfügbar",
+    "paragraph": "Paragraph {name}",
+    "indication": "Indikation",
+    "agreementType": "Vereinbarungsart",
+    "requirements": "Anforderungen",
+    "firstRequest": "Erstantrag",
+    "renewal": "Verlängerung",
+    "validFor": "Gültig für {quantity} {unit}",
+    "validityUnits": {
+      "D": "{quantity, plural, =1 {Tag} other {Tage}}",
+      "W": "{quantity, plural, =1 {Woche} other {Wochen}}",
+      "M": "{quantity, plural, =1 {Monat} other {Monate}}",
+      "Y": "{quantity, plural, =1 {Jahr} other {Jahre}}"
+    }
   },
   "acronym": {
     "CNK": "Code National Kode - Belgischer nationaler Produktcode (7 Ziffern)",

@@ -205,7 +205,21 @@
     "referencePrice": "Prix de référence : {value}",
     "referenceBase": "Base de référence : {value}",
     "otherSettings": "Autres contextes (hôpital, résidentiel)",
-    "patientAmount": "Patient : {amount}"
+    "patientAmount": "Patient : {amount}",
+    "varies": "Variable",
+    "categories": {
+      "A": "Catégorie A - Médicaments essentiels",
+      "B": "Catégorie B - Médicaments utiles",
+      "C": "Catégorie C - Médicaments de confort",
+      "Cs": "Catégorie Cs - Confort (spécial)",
+      "Cx": "Catégorie Cx - Catégorie d'exception",
+      "D": "Catégorie D - Non remboursé"
+    },
+    "regimen": {
+      "PREFERENTIAL": "Intervention majorée",
+      "REGULAR": "Intervention ordinaire",
+      "UNKNOWN": "Inconnu"
+    }
   },
   "ingredients": {
     "pharmaceuticalForm": "Forme pharmaceutique",
@@ -226,7 +240,25 @@
     "requiresPriorAuth": "Ce médicament nécessite une autorisation préalable de votre mutuelle",
     "doctorMustSubmit": "Votre médecin doit soumettre une demande avant que vous puissiez recevoir un remboursement",
     "learnMore": "En savoir plus sur le Chapitre IV",
-    "learnMoreAriaLabel": "En savoir plus sur les exigences d'autorisation préalable du Chapitre IV (ouvre dans un nouvel onglet)"
+    "learnMoreAriaLabel": "En savoir plus sur les exigences d'autorisation préalable du Chapitre IV (ouvre dans un nouvel onglet)",
+    "viewRequirements": "Voir les conditions d'autorisation",
+    "hideRequirements": "Masquer les conditions",
+    "loadingDetails": "Chargement des détails d'autorisation...",
+    "errorLoadingDetails": "Impossible de charger les détails d'autorisation",
+    "noDetails": "Aucune condition détaillée disponible",
+    "paragraph": "Paragraphe {name}",
+    "indication": "Indication",
+    "agreementType": "Type d'accord",
+    "requirements": "Conditions",
+    "firstRequest": "Première demande",
+    "renewal": "Renouvellement",
+    "validFor": "Valable pour {quantity} {unit}",
+    "validityUnits": {
+      "D": "{quantity, plural, =1 {jour} other {jours}}",
+      "W": "{quantity, plural, =1 {semaine} other {semaines}}",
+      "M": "{quantity, plural, =1 {mois} other {mois}}",
+      "Y": "{quantity, plural, =1 {an} other {ans}}"
+    }
   },
   "acronym": {
     "CNK": "Code National Kode - Code national belge du produit (7 chiffres)",

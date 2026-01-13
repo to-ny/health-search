@@ -1,71 +1,67 @@
 import { describe, it, expect } from 'vitest';
 import {
-  isChapterIVCriterion,
+  isChapterIVPath,
   isChapterIV,
   hasChapterIVReimbursement,
   getChapterIVInfoUrl,
   CHAPTER_IV_INFO_URLS,
 } from '@/lib/utils/chapterIV';
-import type { Reimbursement } from '@/lib/types';
+import { getLocalizedText, getVerseSummary } from '@/lib/services/chapterIV';
+import type { Reimbursement, ChapterIVVerse, LocalizedText } from '@/lib/types';
 
 // Helper to create minimal Reimbursement test fixtures
-function createReimbursement(criterion?: { code: string; category: string }): Reimbursement {
+function createReimbursement(legalReferencePath?: string): Reimbursement {
   return {
     cnk: '1234567',
     deliveryEnvironment: 'P',
     copayments: [],
-    criterion,
+    legalReferencePath,
   };
 }
 
 describe('Chapter IV Utilities', () => {
-  describe('isChapterIVCriterion', () => {
-    it('should return true for criterion codes ending with "f"', () => {
-      expect(isChapterIVCriterion('Af')).toBe(true);
-      expect(isChapterIVCriterion('Bf')).toBe(true);
-      expect(isChapterIVCriterion('Cf')).toBe(true);
-      expect(isChapterIVCriterion('Df')).toBe(true);
+  describe('isChapterIVPath', () => {
+    it('should return true for paths containing "-IV-"', () => {
+      // Real examples from SAM API
+      expect(isChapterIVPath('RD20180201-IV-8870000')).toBe(true);
+      expect(isChapterIVPath('RD20180201-IV-4870000')).toBe(true);
+      expect(isChapterIVPath('RD20180201-IV-10680000')).toBe(true);
     });
 
-    it('should return true for lowercase "f" suffix', () => {
-      expect(isChapterIVCriterion('af')).toBe(true);
-      expect(isChapterIVCriterion('AF')).toBe(true);
-      expect(isChapterIVCriterion('aF')).toBe(true);
-    });
-
-    it('should return false for criterion codes not ending with "f"', () => {
-      expect(isChapterIVCriterion('A')).toBe(false);
-      expect(isChapterIVCriterion('B')).toBe(false);
-      expect(isChapterIVCriterion('C')).toBe(false);
-      expect(isChapterIVCriterion('D')).toBe(false);
+    it('should return false for paths with other chapters', () => {
+      // Real examples from SAM API
+      expect(isChapterIVPath('RD20180201-II-70000')).toBe(false);
+      expect(isChapterIVPath('RD20180201-III-50000')).toBe(false);
+      expect(isChapterIVPath('RD20180201-I-10000')).toBe(false);
     });
 
     it('should return false for undefined', () => {
-      expect(isChapterIVCriterion(undefined)).toBe(false);
+      expect(isChapterIVPath(undefined)).toBe(false);
     });
 
     it('should return false for empty string', () => {
-      expect(isChapterIVCriterion('')).toBe(false);
+      expect(isChapterIVPath('')).toBe(false);
     });
 
-    it('should return false for codes where f is not at the end', () => {
-      expect(isChapterIVCriterion('fA')).toBe(false);
-      expect(isChapterIVCriterion('AfB')).toBe(false);
+    it('should not match partial "IV" strings', () => {
+      // Ensure we're matching the chapter segment, not random text
+      expect(isChapterIVPath('RD20180201-INVALID-123')).toBe(false);
+      expect(isChapterIVPath('RDIV20180201-II-70000')).toBe(false);
     });
   });
 
   describe('isChapterIV', () => {
-    it('should return true for reimbursement with Chapter IV criterion', () => {
-      const reimbursement = createReimbursement({ code: 'Af', category: 'A' });
+    it('should return true for reimbursement with Chapter IV path', () => {
+      const reimbursement = createReimbursement('RD20180201-IV-8870000');
       expect(isChapterIV(reimbursement)).toBe(true);
     });
 
-    it('should return false for reimbursement without Chapter IV criterion', () => {
-      const reimbursement = createReimbursement({ code: 'A', category: 'A' });
+    it('should return false for reimbursement with non-Chapter IV path', () => {
+      const reimbursement = createReimbursement('RD20180201-II-70000');
       expect(isChapterIV(reimbursement)).toBe(false);
     });
 
-    it('should return false for reimbursement without criterion', () => {
+    it('should return false for reimbursement without legalReferencePath', () => {
       const reimbursement = createReimbursement(undefined);
       expect(isChapterIV(reimbursement)).toBe(false);
     });
@@ -82,8 +78,8 @@ describe('Chapter IV Utilities', () => {
   describe('hasChapterIVReimbursement', () => {
     it('should return true if any reimbursement is Chapter IV', () => {
       const reimbursements: Reimbursement[] = [
-        createReimbursement({ code: 'A', category: 'A' }),
-        createReimbursement({ code: 'Bf', category: 'B' }),
+        createReimbursement('RD20180201-II-70000'),
+        createReimbursement('RD20180201-IV-8870000'),
       ];
 
       expect(hasChapterIVReimbursement(reimbursements)).toBe(true);
@@ -91,8 +87,8 @@ describe('Chapter IV Utilities', () => {
 
     it('should return false if no reimbursements are Chapter IV', () => {
       const reimbursements: Reimbursement[] = [
-        createReimbursement({ code: 'A', category: 'A' }),
-        createReimbursement({ code: 'B', category: 'B' }),
+        createReimbursement('RD20180201-II-70000'),
+        createReimbursement('RD20180201-III-50000'),
       ];
 
       expect(hasChapterIVReimbursement(reimbursements)).toBe(false);
@@ -142,6 +138,116 @@ describe('Chapter IV Utilities', () => {
     it('should return English fallback for unknown language', () => {
       const url = getChapterIVInfoUrl('es');
       expect(url).toBe(CHAPTER_IV_INFO_URLS.en);
+    });
+  });
+});
+
+describe('Chapter IV Service', () => {
+  describe('getLocalizedText', () => {
+    const sampleTexts: LocalizedText[] = [
+      { text: 'Dutch text', language: 'nl' },
+      { text: 'French text', language: 'fr' },
+      { text: 'English text', language: 'en' },
+    ];
+
+    it('should return text for preferred language', () => {
+      expect(getLocalizedText(sampleTexts, 'nl')).toBe('Dutch text');
+      expect(getLocalizedText(sampleTexts, 'fr')).toBe('French text');
+      expect(getLocalizedText(sampleTexts, 'en')).toBe('English text');
+    });
+
+    it('should fall back to English when preferred language not found', () => {
+      expect(getLocalizedText(sampleTexts, 'de')).toBe('English text');
+    });
+
+    it('should fall back to first available when no English', () => {
+      const noEnglish: LocalizedText[] = [
+        { text: 'Dutch only', language: 'nl' },
+        { text: 'French only', language: 'fr' },
+      ];
+
+      expect(getLocalizedText(noEnglish, 'de')).toBe('Dutch only');
+    });
+
+    it('should return empty string for undefined input', () => {
+      expect(getLocalizedText(undefined)).toBe('');
+    });
+
+    it('should return empty string for empty array', () => {
+      expect(getLocalizedText([])).toBe('');
+    });
+  });
+
+  describe('getVerseSummary', () => {
+    const sampleVerses: ChapterIVVerse[] = [
+      {
+        verseSeq: 1,
+        verseNum: 100,
+        verseSeqParent: 0,
+        verseLevel: 1,
+        text: [{ text: 'Top level verse', language: 'en' }],
+      },
+      {
+        verseSeq: 2,
+        verseNum: 101,
+        verseSeqParent: 1,
+        verseLevel: 2,
+        text: [{ text: 'Second level verse', language: 'en' }],
+      },
+      {
+        verseSeq: 3,
+        verseNum: 102,
+        verseSeqParent: 2,
+        verseLevel: 3,
+        text: [{ text: 'Third level verse', language: 'en' }],
+      },
+    ];
+
+    it('should return only top-level verses (level <= 2)', () => {
+      const summary = getVerseSummary(sampleVerses, 'en');
+
+      expect(summary).toHaveLength(2);
+      expect(summary).toContain('Top level verse');
+      expect(summary).toContain('Second level verse');
+      expect(summary).not.toContain('Third level verse');
+    });
+
+    it('should filter out empty text', () => {
+      const withEmpty: ChapterIVVerse[] = [
+        ...sampleVerses,
+        {
+          verseSeq: 4,
+          verseNum: 103,
+          verseSeqParent: 0,
+          verseLevel: 1,
+          text: [{ text: '', language: 'en' }],
+        },
+      ];
+
+      const summary = getVerseSummary(withEmpty, 'en');
+      expect(summary).toHaveLength(2);
+    });
+
+    it('should return empty array for no verses', () => {
+      expect(getVerseSummary([], 'en')).toEqual([]);
+    });
+
+    it('should use preferred language', () => {
+      const multiLang: ChapterIVVerse[] = [
+        {
+          verseSeq: 1,
+          verseNum: 100,
+          verseSeqParent: 0,
+          verseLevel: 1,
+          text: [
+            { text: 'English verse', language: 'en' },
+            { text: 'Dutch verse', language: 'nl' },
+          ],
+        },
+      ];
+
+      expect(getVerseSummary(multiLang, 'nl')).toEqual(['Dutch verse']);
+      expect(getVerseSummary(multiLang, 'en')).toEqual(['English verse']);
     });
   });
 });

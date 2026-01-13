@@ -5,42 +5,37 @@
  * The prescriber must submit a request explaining why the patient needs this specific medication.
  *
  * Detection logic:
- * - Criterion codes ending with 'f' indicate a formal indication (prior authorization required)
- * - Examples: "Af", "Bf", "Cf", "Df" etc.
+ * - The LegalReferencePath attribute from FindReimbursement contains the chapter identifier
+ * - Format: RD{date}-{chapter}-{paragraph} (e.g., "RD20180201-IV-8870000")
+ * - Chapter IV medications have "-IV-" in the path
  */
 
 import type { Reimbursement } from '@/lib/types';
 
 /**
  * Official RIZIV/INAMI information URLs for Chapter IV
+ * Updated January 2026 - RIZIV/INAMI website was restructured
  */
 export const CHAPTER_IV_INFO_URLS = {
-  // Dutch (RIZIV)
-  nl: 'https://www.riziv.fgov.be/nl/themas/kost-terugbetaling/door-ziekenfonds/geneesmiddel-gezondheidsproduct/geneesmiddel-voorschrijven/Paginas/hoofdstuk-IV-aanvragen.aspx',
-  // French (INAMI)
-  fr: 'https://www.inami.fgov.be/fr/themes/cout-remboursement/par-mutualite/medicament-produit-sante/prescrire-medicament/Pages/demander-chapitre-iv.aspx',
-  // German - fallback to French
-  de: 'https://www.inami.fgov.be/fr/themes/cout-remboursement/par-mutualite/medicament-produit-sante/prescrire-medicament/Pages/demander-chapitre-iv.aspx',
-  // English - fallback to Dutch (most comprehensive)
-  en: 'https://www.riziv.fgov.be/nl/themas/kost-terugbetaling/door-ziekenfonds/geneesmiddel-gezondheidsproduct/geneesmiddel-voorschrijven/Paginas/hoofdstuk-IV-aanvragen.aspx',
+  // Dutch (RIZIV) - explains the a priori control system
+  nl: 'https://www.riziv.fgov.be/nl/thema-s/verzorging-kosten-en-terugbetaling/wat-het-ziekenfonds-terugbetaalt/geneesmiddelen/geneesmiddel-terugbetalen/vergoedbare-farmaceutische-specialiteiten/lijst-van-farmaceutische-specialiteiten-de-hoofdstukken/terugbetaling-van-farmaceutische-specialiteiten-uit-hoofdstuk-iv-en-viii-a-priori-controle',
+  // French (INAMI) - explains the a priori control system
+  fr: 'https://www.inami.fgov.be/fr/themes/soins-de-sante-cout-et-remboursement/les-prestations-de-sante-que-vous-rembourse-votre-mutualite/medicaments/remboursement-d-un-medicament/specialites-pharmaceutiques-remboursables/liste-des-specialites-pharmaceutiques-les-chapitres/remboursement-des-specialites-pharmaceutiques-du-chapitre-iv-et-viii-le-controle-a-priori',
+  // German - fallback to French (no German version available)
+  de: 'https://www.inami.fgov.be/fr/themes/soins-de-sante-cout-et-remboursement/les-prestations-de-sante-que-vous-rembourse-votre-mutualite/medicaments/remboursement-d-un-medicament/specialites-pharmaceutiques-remboursables/liste-des-specialites-pharmaceutiques-les-chapitres/remboursement-des-specialites-pharmaceutiques-du-chapitre-iv-et-viii-le-controle-a-priori',
+  // English - fallback to Dutch (no English version available, Dutch is more comprehensive)
+  en: 'https://www.riziv.fgov.be/nl/thema-s/verzorging-kosten-en-terugbetaling/wat-het-ziekenfonds-terugbetaalt/geneesmiddelen/geneesmiddel-terugbetalen/vergoedbare-farmaceutische-specialiteiten/lijst-van-farmaceutische-specialiteiten-de-hoofdstukken/terugbetaling-van-farmaceutische-specialiteiten-uit-hoofdstuk-iv-en-viii-a-priori-controle',
 } as const;
 
 /**
- * Checks if a reimbursement criterion code indicates Chapter IV (formal indication)
+ * Checks if a legal reference path indicates Chapter IV
  *
- * Chapter IV medications have criterion codes ending with 'f' (formal)
- * This indicates that prior authorization from the health insurer is required.
- *
- * @param criterionCode - The reimbursement criterion code (e.g., "Af", "Bf", "A", "B")
- * @returns true if this is a Chapter IV (formal indication) medication
+ * @param legalReferencePath - The legal reference path (e.g., "RD20180201-IV-8870000")
+ * @returns true if this is a Chapter IV medication
  */
-export function isChapterIVCriterion(criterionCode: string | undefined): boolean {
-  if (!criterionCode) return false;
-
-  // Check if criterion code ends with 'f' (case insensitive)
-  // Examples: "Af", "Bf", "Cf", "Df" are Chapter IV
-  // Examples: "A", "B", "C", "D" are NOT Chapter IV
-  return criterionCode.toLowerCase().endsWith('f');
+export function isChapterIVPath(legalReferencePath: string | undefined): boolean {
+  if (!legalReferencePath) return false;
+  return legalReferencePath.includes('-IV-');
 }
 
 /**
@@ -50,9 +45,8 @@ export function isChapterIVCriterion(criterionCode: string | undefined): boolean
  * @returns true if this medication requires Chapter IV prior authorization
  */
 export function isChapterIV(reimbursement: Reimbursement | undefined | null): boolean {
-  if (!reimbursement?.criterion) return false;
-
-  return isChapterIVCriterion(reimbursement.criterion.code);
+  if (!reimbursement) return false;
+  return isChapterIVPath(reimbursement.legalReferencePath);
 }
 
 /**
@@ -65,7 +59,6 @@ export function hasChapterIVReimbursement(
   reimbursements: Reimbursement[] | undefined | null
 ): boolean {
   if (!reimbursements?.length) return false;
-
   return reimbursements.some(isChapterIV);
 }
 

@@ -75,7 +75,7 @@ function transformCnkCode(raw: RawDmppData): CnkCode | null {
   if (!raw) return null;
 
   return {
-    code: raw['@_Code'] || '',
+    code: String(raw['@_Code'] || ''),
     deliveryEnvironment: (raw['@_DeliveryEnvironment'] as 'P' | 'H') || 'P',
     price: raw.Price,
     cheap: raw.Cheap || false,

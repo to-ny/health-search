@@ -9,10 +9,16 @@ import { parseFindReimbursementResponse, type RawReimbursementData } from '@/lib
 import type { Reimbursement, Copayment, ApiResponse } from '@/lib/types';
 
 interface RawCopayment {
-  '@_Regimen'?: string;
+  '@_RegimeType'?: string;
   FeeAmount?: number;
   ReimbursementAmount?: number;
 }
+
+// Map RegimeType values to readable names
+const REGIME_TYPE_MAP: Record<string, string> = {
+  '1': 'PREFERENTIAL',
+  '2': 'REGULAR',
+};
 
 /**
  * Transforms raw copayment data
@@ -20,8 +26,9 @@ interface RawCopayment {
 function transformCopayment(raw: RawCopayment): Copayment | null {
   if (!raw) return null;
 
+  const regimeType = raw['@_RegimeType'];
   return {
-    regimen: raw['@_Regimen'] || 'UNKNOWN',
+    regimen: REGIME_TYPE_MAP[regimeType || ''] || regimeType || 'UNKNOWN',
     feeAmount: raw.FeeAmount,
     reimbursementAmount: raw.ReimbursementAmount,
   };
@@ -34,10 +41,11 @@ function transformReimbursement(raw: RawReimbursementData): Reimbursement {
   return {
     cnk: raw['@_Code'] || '',
     deliveryEnvironment: (raw['@_DeliveryEnvironment'] as 'P' | 'H') || 'P',
+    legalReferencePath: raw['@_LegalReferencePath'],
     criterion: raw.ReimbursementCriterion
       ? {
-          category: raw.ReimbursementCriterion.Category || '',
-          code: raw.ReimbursementCriterion.Code || '',
+          category: raw.ReimbursementCriterion['@_Category'] || '',
+          code: raw.ReimbursementCriterion['@_Code'] || '',
         }
       : undefined,
     copayments: (raw.Copayment || [])

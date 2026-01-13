@@ -7,6 +7,7 @@ import {
   parseFindCompanyResponse,
   parseFindReimbursementResponse,
   parseFindAtcResponse,
+  parseFindChapterIVResponse,
   extractText,
   extractTextWithLang,
   extractAllTextVersions,
@@ -510,6 +511,128 @@ describe('XML Parser', () => {
       expect(result.success).toBe(true);
       expect(result.data).toHaveLength(1);
       expect(result.data![0].CommentedClassificationCode).toBe('B');
+    });
+  });
+
+  describe('parseFindChapterIVResponse', () => {
+    it('should parse valid Chapter IV paragraph response', () => {
+      const xml = loadFixture('findchapteriv-cnk-response.xml');
+      const result = parseFindChapterIVResponse(xml);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toBeDefined();
+      expect(result.data!.length).toBe(1);
+      expect(result.searchDate).toBe('2025-01-12');
+    });
+
+    it('should extract paragraph attributes', () => {
+      const xml = loadFixture('findchapteriv-cnk-response.xml');
+      const result = parseFindChapterIVResponse(xml);
+
+      const paragraph = result.data![0];
+      expect(paragraph['@_ChapterName']).toBe('IV');
+      // ParagraphName may be parsed as number or string depending on XML content
+      expect(String(paragraph['@_ParagraphName'])).toBe('10680000');
+      expect(paragraph['@_StartDate']).toBe('2025-01-01');
+    });
+
+    it('should extract LegalReferencePath', () => {
+      const xml = loadFixture('findchapteriv-cnk-response.xml');
+      const result = parseFindChapterIVResponse(xml);
+
+      expect(result.data![0].LegalReferencePath).toBe('RD20180201-IV-10680000');
+    });
+
+    it('should extract KeyString with multiple languages', () => {
+      const xml = loadFixture('findchapteriv-cnk-response.xml');
+      const result = parseFindChapterIVResponse(xml);
+
+      const keyString = result.data![0].KeyString;
+      expect(keyString).toBeDefined();
+      expect(keyString?.Text).toBeDefined();
+      expect(keyString!.Text!.length).toBe(2);
+    });
+
+    it('should parse verses with hierarchy', () => {
+      const xml = loadFixture('findchapteriv-cnk-response.xml');
+      const result = parseFindChapterIVResponse(xml);
+
+      const verses = result.data![0].Verse;
+      expect(verses).toBeDefined();
+      expect(Array.isArray(verses)).toBe(true);
+      expect(verses!.length).toBe(3);
+
+      // Check first verse (top level)
+      expect(verses![0]['@_VerseSeq']).toBe(1);
+      expect(verses![0].VerseLevel).toBe(1);
+      expect(verses![0].VerseSeqParent).toBe(0);
+
+      // Check second verse (child)
+      expect(verses![1].VerseLevel).toBe(2);
+      expect(verses![1].VerseSeqParent).toBe(1);
+    });
+
+    it('should parse verse RequestType and AgreementTerm', () => {
+      const xml = loadFixture('findchapteriv-cnk-response.xml');
+      const result = parseFindChapterIVResponse(xml);
+
+      const verses = result.data![0].Verse;
+
+      // Second verse has RequestType N (new request) and 12 month agreement
+      expect(verses![1].RequestType).toBe('N');
+      expect(verses![1].AgreementTerm?.Quantity).toBe(12);
+      expect(verses![1].AgreementTerm?.Unit).toBe('M');
+
+      // Third verse has RequestType P (prolongation) and 6 month agreement
+      expect(verses![2].RequestType).toBe('P');
+      expect(verses![2].AgreementTerm?.Quantity).toBe(6);
+    });
+
+    it('should handle no results found (code 1016) as empty array', () => {
+      const xml = loadFixture('findchapteriv-noresults-response.xml');
+      const result = parseFindChapterIVResponse(xml);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual([]);
+    });
+
+    it('should handle SOAP fault response', () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+          <soap:Body>
+            <soap:Fault>
+              <faultcode>soap:Server</faultcode>
+              <faultstring>Internal server error</faultstring>
+            </soap:Fault>
+          </soap:Body>
+        </soap:Envelope>`;
+
+      const result = parseFindChapterIVResponse(xml);
+
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe('SOAP_FAULT');
+    });
+
+    it('should handle invalid XML', () => {
+      const result = parseFindChapterIVResponse('not xml at all');
+
+      expect(result.success).toBe(false);
+      expect(result.error?.code).toBe('PARSE_ERROR');
+    });
+
+    it('should handle empty response', () => {
+      const xml = `<?xml version="1.0" encoding="UTF-8"?>
+        <soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+          <soap:Body>
+            <ns4:FindChapterIVParagraphResponse xmlns:ns4="urn:be:fgov:ehealth:dics:protocol:v5">
+            </ns4:FindChapterIVParagraphResponse>
+          </soap:Body>
+        </soap:Envelope>`;
+
+      const result = parseFindChapterIVResponse(xml);
+
+      expect(result.success).toBe(true);
+      expect(result.data).toEqual([]);
     });
   });
 });
