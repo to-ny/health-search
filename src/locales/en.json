@@ -96,7 +96,8 @@
     "patientFrailtyIndicator": "Patient Frailty Indicator",
     "patientFrailtyDescription": "This therapeutic group requires special attention for frail patients.",
     "noGenericPrescription": "No Generic Prescription",
-    "noSwitching": "No Switching"
+    "noSwitching": "No Switching",
+    "productsContainingIngredient": "Products Containing This Ingredient"
   },
   "languages": {
     "dutch": "Dutch",

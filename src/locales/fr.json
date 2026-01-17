@@ -96,7 +96,8 @@
     "patientFrailtyIndicator": "Indicateur de Fragilité du Patient",
     "patientFrailtyDescription": "Ce groupe thérapeutique nécessite une attention particulière pour les patients fragiles.",
     "noGenericPrescription": "Pas de Prescription Générique",
-    "noSwitching": "Pas de Substitution"
+    "noSwitching": "Pas de Substitution",
+    "productsContainingIngredient": "Produits Contenant Cet Ingrédient"
   },
   "languages": {
     "dutch": "Néerlandais",

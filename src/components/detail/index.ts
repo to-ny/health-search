@@ -1,4 +1,5 @@
 export { VTMDetail } from './vtm-detail';
+export { SubstanceDetail } from './substance-detail';
 export { VMPDetail } from './vmp-detail';
 export { AMPDetail } from './amp-detail';
 export { AMPPDetail } from './ampp-detail';
