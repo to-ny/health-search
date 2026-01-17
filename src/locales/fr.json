@@ -2,30 +2,15 @@
   "common": {
     "search": "Rechercher",
     "searchPlaceholder": "Rechercher médicaments, substances, entreprises...",
-    "loading": "Chargement...",
-    "noResults": "Aucun résultat trouvé",
-    "viewAll": "Voir tout",
-    "showMore": "Afficher plus",
     "showLess": "Afficher moins",
     "showAll": "Afficher tout",
-    "filters": "Filtres",
-    "clearFilters": "Effacer les filtres",
     "results": "résultats",
     "result": "résultat",
-    "page": "Page",
-    "of": "sur",
-    "next": "Suivant",
-    "previous": "Précédent",
     "yes": "Oui",
     "no": "Non",
-    "unknown": "Inconnu",
-    "notAvailable": "N/D",
-    "active": "Actif",
-    "inactive": "Inactif",
     "all": "Tous",
     "typeAtLeast": "Tapez au moins 2 caractères",
     "products": "produits",
-    "priceNotAvailable": "Prix non disponible",
     "retrySearch": "Réessayer",
     "searchAll": "Rechercher tout"
   },
@@ -37,8 +22,7 @@
     "company": "Entreprise",
     "vmpGroup": "Groupe VMP",
     "atc": "Classification ATC",
-    "substance": "Substance",
-    "chapterIV": "Chapitre IV"
+    "substance": "Substance"
   },
   "entityLabels": {
     "substance": "Substance",
@@ -52,66 +36,26 @@
     "classification": "Classification",
     "therapeuticGroup": "Groupe Thérapeutique"
   },
-  "entityPlural": {
-    "vtm": "Groupes Thérapeutiques Virtuels",
-    "vmp": "Médicaments Virtuels",
-    "amp": "Médicaments Réels",
-    "ampp": "Conditionnements de Médicaments Réels",
-    "company": "Entreprises",
-    "vmpGroup": "Groupes VMP",
-    "atc": "Classifications ATC",
-    "substance": "Substances",
-    "chapterIV": "Paragraphes du Chapitre IV"
-  },
   "search": {
-    "title": "Recherche de Médicaments",
-    "subtitle": "Recherchez dans la base de données belge des médicaments",
-    "placeholder": "Rechercher par nom, code, substance, entreprise...",
-    "filterByType": "Filtrer par type",
-    "allTypes": "Tous les types",
     "resultsFor": "pour",
-    "noResultsTitle": "Aucun résultat trouvé",
-    "noResultsMessage": "Essayez d'ajuster vos termes de recherche ou vos filtres",
-    "searching": "Recherche en cours...",
-    "findMedications": "Trouvez des médicaments, substances, marques et conditionnements",
-    "examples": "Exemples",
     "filteredBy": "Filtré par"
   },
   "detail": {
     "overview": "Aperçu",
-    "composition": "Composition",
-    "substances": "Substances",
     "products": "Produits",
     "packages": "Conditionnements",
-    "pricing": "Prix",
     "reimbursement": "Remboursement",
     "documents": "Documents",
-    "relatedProducts": "Produits Connexes",
     "manufacturer": "Fabricant",
-    "marketingAuthorization": "Autorisation de Mise sur le Marché",
     "validity": "Validité",
     "status": "Statut",
     "code": "Code",
-    "name": "Nom",
-    "description": "Description",
-    "activeSubstances": "Substances Actives",
-    "strength": "Dosage",
-    "pharmaceuticalForm": "Forme Pharmaceutique",
-    "routeOfAdministration": "Voie d'Administration",
-    "atcCode": "Code ATC",
-    "legalCategory": "Catégorie Légale",
-    "deliveryModus": "Mode de Délivrance",
-    "blackTriangle": "Triangle Noir",
     "orphanDrug": "Médicament Orphelin",
     "hospital": "Hôpital",
     "public": "Public",
     "excipients": "Excipients",
-    "spc": "Résumé des Caractéristiques du Produit",
-    "leaflet": "Notice Patient",
-    "copaymentCategory": "Catégorie de Quote-part",
     "referencePrice": "Prix de Référence",
     "exFactoryPrice": "Prix Départ Usine",
-    "publicPrice": "Prix Public",
     "copayment": "Quote-part",
     "genericProducts": "Produits Génériques",
     "brandProducts": "Produits de Marque",
@@ -163,15 +107,12 @@
   "company": {
     "vat": "Numéro de TVA",
     "address": "Adresse",
-    "productsManufactured": "Produits Fabriqués",
-    "productsDistributed": "Produits Distribués",
     "phone": "Téléphone",
     "preferredLanguage": "Langue préférée",
     "legalForm": "Forme juridique",
     "country": "Pays"
   },
   "chapterIV": {
-    "requirements": "Exigences et Conditions",
     "coveredProducts": "Produits Couverts",
     "processType": "Type de Processus",
     "processOverride": "Remplacement du processus",
@@ -189,8 +130,6 @@
   "home": {
     "title": "MedSearch",
     "subtitle": "Recherchez dans la Base de Données des Médicaments Belges",
-    "description": "Recherchez et explorez la base de données complète des médicaments belges. Trouvez des informations sur les médicaments, substances, fabricants et détails de remboursement.",
-    "searchPrompt": "Commencez par rechercher un médicament, une substance ou une entreprise",
     "examples": "Exemples",
     "cnkCode": "Code CNK",
     "atcCode": "Code ATC",
@@ -202,7 +141,6 @@
     "infoReimbursementDescription": "Consultez les détails de couverture et les coûts pour les patients"
   },
   "footer": {
-    "dataSource": "Source de données: SAM v2 (Base de Données des Médicaments Belges)",
     "disclaimer": "À titre informatif uniquement. Consultez un professionnel de santé pour des conseils médicaux."
   },
   "emptyState": {
@@ -297,12 +235,5 @@
     "ampCode": "AMP",
     "ampCodeFull": "Code AMP",
     "ampCodeTooltip": "Code Médicament Réel - identifie les produits de médicaments de marque"
-  },
-  "atcLevels": {
-    "level1": "Niveau 1 (Anatomique)",
-    "level2": "Niveau 2 (Thérapeutique)",
-    "level3": "Niveau 3 (Pharmacologique)",
-    "level4": "Niveau 4 (Chimique)",
-    "level5": "Niveau 5 (Substance)"
   }
 }

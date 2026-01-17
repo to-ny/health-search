@@ -2,30 +2,15 @@
   "common": {
     "search": "Search",
     "searchPlaceholder": "Search medications, substances, companies...",
-    "loading": "Loading...",
-    "noResults": "No results found",
-    "viewAll": "View all",
-    "showMore": "Show more",
     "showLess": "Show less",
     "showAll": "Show all",
-    "filters": "Filters",
-    "clearFilters": "Clear filters",
     "results": "results",
     "result": "result",
-    "page": "Page",
-    "of": "of",
-    "next": "Next",
-    "previous": "Previous",
     "yes": "Yes",
     "no": "No",
-    "unknown": "Unknown",
-    "notAvailable": "N/A",
-    "active": "Active",
-    "inactive": "Inactive",
     "all": "All",
     "typeAtLeast": "Type at least 2 characters",
     "products": "products",
-    "priceNotAvailable": "Price not available",
     "retrySearch": "Retry Search",
     "searchAll": "Search all"
   },
@@ -37,8 +22,7 @@
     "company": "Company",
     "vmpGroup": "VMP Group",
     "atc": "ATC Classification",
-    "substance": "Substance",
-    "chapterIV": "Chapter IV"
+    "substance": "Substance"
   },
   "entityLabels": {
     "substance": "Substance",
@@ -52,66 +36,26 @@
     "classification": "Classification",
     "therapeuticGroup": "Therapeutic Group"
   },
-  "entityPlural": {
-    "vtm": "Virtual Therapeutic Moieties",
-    "vmp": "Virtual Medicinal Products",
-    "amp": "Actual Medicinal Products",
-    "ampp": "Actual Medicinal Product Packages",
-    "company": "Companies",
-    "vmpGroup": "VMP Groups",
-    "atc": "ATC Classifications",
-    "substance": "Substances",
-    "chapterIV": "Chapter IV Paragraphs"
-  },
   "search": {
-    "title": "Search Medications",
-    "subtitle": "Search across Belgium's medication database",
-    "placeholder": "Search by name, code, substance, company...",
-    "filterByType": "Filter by type",
-    "allTypes": "All types",
     "resultsFor": "for",
-    "noResultsTitle": "No results found",
-    "noResultsMessage": "Try adjusting your search terms or filters",
-    "searching": "Searching...",
-    "findMedications": "Find medications, substances, brands, and packages",
-    "examples": "Examples",
     "filteredBy": "Filtered by"
   },
   "detail": {
     "overview": "Overview",
-    "composition": "Composition",
-    "substances": "Substances",
     "products": "Products",
     "packages": "Packages",
-    "pricing": "Pricing",
     "reimbursement": "Reimbursement",
     "documents": "Documents",
-    "relatedProducts": "Related Products",
     "manufacturer": "Manufacturer",
-    "marketingAuthorization": "Marketing Authorization",
     "validity": "Validity",
     "status": "Status",
     "code": "Code",
-    "name": "Name",
-    "description": "Description",
-    "activeSubstances": "Active Substances",
-    "strength": "Strength",
-    "pharmaceuticalForm": "Pharmaceutical Form",
-    "routeOfAdministration": "Route of Administration",
-    "atcCode": "ATC Code",
-    "legalCategory": "Legal Category",
-    "deliveryModus": "Delivery Mode",
-    "blackTriangle": "Black Triangle",
     "orphanDrug": "Orphan Drug",
     "hospital": "Hospital",
     "public": "Public",
     "excipients": "Excipients",
-    "spc": "Summary of Product Characteristics",
-    "leaflet": "Patient Leaflet",
-    "copaymentCategory": "Copayment Category",
     "referencePrice": "Reference Price",
     "exFactoryPrice": "Ex-factory Price",
-    "publicPrice": "Public Price",
     "copayment": "Copayment",
     "genericProducts": "Generic Products",
     "brandProducts": "Brand Products",
@@ -163,15 +107,12 @@
   "company": {
     "vat": "VAT Number",
     "address": "Address",
-    "productsManufactured": "Products Manufactured",
-    "productsDistributed": "Products Distributed",
     "phone": "Phone",
     "preferredLanguage": "Preferred Language",
     "legalForm": "Legal Form",
     "country": "Country"
   },
   "chapterIV": {
-    "requirements": "Requirements & Conditions",
     "coveredProducts": "Covered Products",
     "processType": "Process Type",
     "processOverride": "Process Override",
@@ -189,8 +130,6 @@
   "home": {
     "title": "MedSearch",
     "subtitle": "Search Belgium's Medication Database",
-    "description": "Search and explore Belgium's comprehensive medication database. Find information about medications, substances, manufacturers, and reimbursement details.",
-    "searchPrompt": "Start by searching for a medication, substance, or company",
     "examples": "Examples",
     "cnkCode": "CNK code",
     "atcCode": "ATC code",
@@ -202,7 +141,6 @@
     "infoReimbursementDescription": "View coverage details and patient costs"
   },
   "footer": {
-    "dataSource": "Data source: SAM v2 (Belgian Medication Database)",
     "disclaimer": "For informational purposes only. Consult a healthcare professional for medical advice."
   },
   "emptyState": {
@@ -297,12 +235,5 @@
     "ampCode": "AMP",
     "ampCodeFull": "AMP Code",
     "ampCodeTooltip": "Actual Medicinal Product code - identifies branded medication products"
-  },
-  "atcLevels": {
-    "level1": "Level 1 (Anatomical)",
-    "level2": "Level 2 (Therapeutic)",
-    "level3": "Level 3 (Pharmacological)",
-    "level4": "Level 4 (Chemical)",
-    "level5": "Level 5 (Substance)"
   }
 }
