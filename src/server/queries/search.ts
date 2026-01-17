@@ -216,7 +216,18 @@ export async function executeSearch(
         const vmpGroupFilter = filters?.vmpGroupCode;
 
         let result;
+        let totalCount: number | null = null;
+
         if (vtmFilter) {
+        // Get accurate count first
+        const countResult = await sql`
+          SELECT COUNT(DISTINCT v.code)::int as count
+          FROM vmp v
+          WHERE v.vtm_code = ${vtmFilter}
+            AND (v.end_date IS NULL OR v.end_date > CURRENT_DATE)
+        `;
+        totalCount = countResult.rows[0]?.count || 0;
+
         result = await sql`
           SELECT DISTINCT ON (v.code)
             'vmp' as entity_type,
@@ -236,9 +247,18 @@ export async function executeSearch(
           WHERE v.vtm_code = ${vtmFilter}
             AND (v.end_date IS NULL OR v.end_date > CURRENT_DATE)
           ORDER BY v.code
-          LIMIT ${SEARCH_LIMIT_PER_TABLE}
+          LIMIT ${limit} OFFSET ${offset}
         `;
       } else if (vmpGroupFilter) {
+        // Get accurate count first
+        const countResult = await sql`
+          SELECT COUNT(DISTINCT v.code)::int as count
+          FROM vmp v
+          WHERE v.vmp_group_code = ${vmpGroupFilter}
+            AND (v.end_date IS NULL OR v.end_date > CURRENT_DATE)
+        `;
+        totalCount = countResult.rows[0]?.count || 0;
+
         result = await sql`
           SELECT DISTINCT ON (v.code)
             'vmp' as entity_type,
@@ -258,7 +278,7 @@ export async function executeSearch(
           WHERE v.vmp_group_code = ${vmpGroupFilter}
             AND (v.end_date IS NULL OR v.end_date > CURRENT_DATE)
           ORDER BY v.code
-          LIMIT ${SEARCH_LIMIT_PER_TABLE}
+          LIMIT ${limit} OFFSET ${offset}
         `;
       } else {
         result = await sql`
@@ -291,7 +311,8 @@ export async function executeSearch(
           LIMIT ${SEARCH_LIMIT_PER_TABLE}
         `;
       }
-        facetCounts.vmp = result.rows.length;
+        // Use accurate count from COUNT query if available, otherwise use rows.length
+        facetCounts.vmp = totalCount !== null ? totalCount : result.rows.length;
         if (shouldFetchResults('vmp')) {
           result.rows.forEach((r) => {
             allResults.push({
@@ -317,8 +338,20 @@ export async function executeSearch(
         const vtmFilter = filters?.vtmCode;
 
       let result;
+      let totalCount: number | null = null;
+
       if (vtmFilter) {
-        // Filter AMPs by VTM code (through VMP relationship)
+        // Get accurate count first
+        const countResult = await sql`
+          SELECT COUNT(DISTINCT a.code)::int as count
+          FROM amp a
+          JOIN vmp v ON v.code = a.vmp_code
+          WHERE v.vtm_code = ${vtmFilter}
+            AND (a.end_date IS NULL OR a.end_date > CURRENT_DATE)
+        `;
+        totalCount = countResult.rows[0]?.count || 0;
+
+        // Filter AMPs by VTM code (through VMP relationship) with pagination
         result = await sql`
           SELECT DISTINCT ON (a.code)
             'amp' as entity_type,
@@ -339,9 +372,18 @@ export async function executeSearch(
           WHERE v.vtm_code = ${vtmFilter}
             AND (a.end_date IS NULL OR a.end_date > CURRENT_DATE)
           ORDER BY a.code
-          LIMIT ${SEARCH_LIMIT_PER_TABLE}
+          LIMIT ${limit} OFFSET ${offset}
         `;
       } else if (vmpFilter) {
+        // Get accurate count first
+        const countResult = await sql`
+          SELECT COUNT(DISTINCT a.code)::int as count
+          FROM amp a
+          WHERE a.vmp_code = ${vmpFilter}
+            AND (a.end_date IS NULL OR a.end_date > CURRENT_DATE)
+        `;
+        totalCount = countResult.rows[0]?.count || 0;
+
         result = await sql`
           SELECT DISTINCT ON (a.code)
             'amp' as entity_type,
@@ -362,9 +404,18 @@ export async function executeSearch(
           WHERE a.vmp_code = ${vmpFilter}
             AND (a.end_date IS NULL OR a.end_date > CURRENT_DATE)
           ORDER BY a.code
-          LIMIT ${SEARCH_LIMIT_PER_TABLE}
+          LIMIT ${limit} OFFSET ${offset}
         `;
       } else if (companyFilter) {
+        // Get accurate count first
+        const countResult = await sql`
+          SELECT COUNT(DISTINCT a.code)::int as count
+          FROM amp a
+          WHERE a.company_actor_nr = ${companyFilter}
+            AND (a.end_date IS NULL OR a.end_date > CURRENT_DATE)
+        `;
+        totalCount = countResult.rows[0]?.count || 0;
+
         result = await sql`
           SELECT DISTINCT ON (a.code)
             'amp' as entity_type,
@@ -385,7 +436,7 @@ export async function executeSearch(
           WHERE a.company_actor_nr = ${companyFilter}
             AND (a.end_date IS NULL OR a.end_date > CURRENT_DATE)
           ORDER BY a.code
-          LIMIT ${SEARCH_LIMIT_PER_TABLE}
+          LIMIT ${limit} OFFSET ${offset}
         `;
       } else {
         result = await sql`
@@ -419,7 +470,8 @@ export async function executeSearch(
           LIMIT ${SEARCH_LIMIT_PER_TABLE}
         `;
       }
-        facetCounts.amp = result.rows.length;
+        // Use accurate count from COUNT query if available, otherwise use rows.length
+        facetCounts.amp = totalCount !== null ? totalCount : result.rows.length;
         if (shouldFetchResults('amp')) {
           result.rows.forEach((r) => {
             allResults.push({
@@ -446,8 +498,19 @@ export async function executeSearch(
         const atcFilter = filters?.atcCode;
 
       let amppQuery;
+      let totalCount: number | null = null;
+
       if (ampFilter) {
-        // Filter by AMP code
+        // Get accurate count first
+        const countResult = await sql`
+          SELECT COUNT(DISTINCT ampp.cti_extended)::int as count
+          FROM ampp
+          WHERE ampp.amp_code = ${ampFilter}
+            AND (ampp.end_date IS NULL OR ampp.end_date > CURRENT_DATE)
+        `;
+        totalCount = countResult.rows[0]?.count || 0;
+
+        // Filter by AMP code with pagination
         amppQuery = sql`
           SELECT DISTINCT ON (ampp.cti_extended)
             'ampp' as entity_type,
@@ -478,10 +541,22 @@ export async function executeSearch(
           WHERE ampp.amp_code = ${ampFilter}
             AND (ampp.end_date IS NULL OR ampp.end_date > CURRENT_DATE)
           ORDER BY ampp.cti_extended
-          LIMIT ${SEARCH_LIMIT_PER_TABLE}
+          LIMIT ${limit} OFFSET ${offset}
         `;
       } else if (atcFilter) {
-        // Filter by ATC code - need to join with amp_atc_classification
+        // Get accurate count first
+        const countResult = await sql`
+          SELECT COUNT(DISTINCT ampp.cti_extended)::int as count
+          FROM ampp
+          JOIN amp ON amp.code = ampp.amp_code
+          JOIN amp_atc_classification aac ON aac.amp_code = amp.code
+          WHERE aac.atc_code = ${atcFilter}
+            AND (ampp.end_date IS NULL OR ampp.end_date > CURRENT_DATE)
+            AND (aac.end_date IS NULL OR aac.end_date > CURRENT_DATE)
+        `;
+        totalCount = countResult.rows[0]?.count || 0;
+
+        // Filter by ATC code with pagination
         amppQuery = sql`
           SELECT DISTINCT ON (ampp.cti_extended)
             'ampp' as entity_type,
@@ -514,7 +589,7 @@ export async function executeSearch(
             AND (ampp.end_date IS NULL OR ampp.end_date > CURRENT_DATE)
             AND (aac.end_date IS NULL OR aac.end_date > CURRENT_DATE)
           ORDER BY ampp.cti_extended
-          LIMIT ${SEARCH_LIMIT_PER_TABLE}
+          LIMIT ${limit} OFFSET ${offset}
         `;
       } else if (isCnkQuery) {
         // CNK exact match
@@ -580,7 +655,8 @@ export async function executeSearch(
         `;
       }
         const result = await amppQuery;
-        facetCounts.ampp = result.rows.length;
+        // Use accurate count from COUNT query if available, otherwise use rows.length
+        facetCounts.ampp = totalCount !== null ? totalCount : result.rows.length;
         if (shouldFetchResults('ampp')) {
           result.rows.forEach((r) => {
             allResults.push({
