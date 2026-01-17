@@ -15,22 +15,33 @@ import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/lib/hooks/use-language';
 import { useTranslation } from '@/lib/hooks/use-translation';
 import { formatValidityPeriod, formatPrice } from '@/lib/utils/format';
+import { generateEntitySlug, generateATCSlug } from '@/lib/utils/slug';
 import type { AMPPWithRelations } from '@/server/types/entities';
+import type { MultilingualText } from '@/server/types/domain';
 
 interface AMPPDetailProps {
   ampp: AMPPWithRelations;
 }
 
 export function AMPPDetail({ ampp }: AMPPDetailProps) {
-  const { getLocalized } = useLanguage();
+  const { getLocalized, language } = useLanguage();
   const { t } = useTranslation();
   const name = ampp.prescriptionName
     ? getLocalized(ampp.prescriptionName)
     : getLocalized(ampp.amp.name);
   const ampName = getLocalized(ampp.amp.name);
 
+  // Generate slugs for links
+  const ampSlug = generateEntitySlug(ampp.amp.name, ampp.amp.code, language);
+  const atcDescription: MultilingualText | undefined = ampp.atcClassification
+    ? { [language]: ampp.atcClassification.description }
+    : undefined;
+  const atcSlug = ampp.atcClassification
+    ? generateATCSlug(ampp.atcClassification.code, atcDescription, language)
+    : null;
+
   const breadcrumbs = [
-    { label: ampName, href: `/amp/${ampp.ampCode}` },
+    { label: ampName, href: `/${language}/medications/${ampSlug}` },
     { label: ampp.packDisplayValue || name },
   ];
 
@@ -78,7 +89,7 @@ export function AMPPDetail({ ampp }: AMPPDetailProps) {
 
           {/* Brand Information */}
           <Section title={t('detail.brandInformation')}>
-            <Link href={`/amp/${ampp.amp.code}`} className="block group">
+            <Link href={`/${language}/medications/${ampSlug}`} className="block group">
               <Card hover padding="sm">
                 <div className="flex items-center gap-3">
                   <EntityTypeBadge type="amp" size="sm" />
@@ -98,9 +109,9 @@ export function AMPPDetail({ ampp }: AMPPDetailProps) {
           </Section>
 
           {/* ATC Classification */}
-          {ampp.atcClassification && (
+          {ampp.atcClassification && atcSlug && (
             <Section title={t('detail.atcClassification')}>
-              <Link href={`/atc/${ampp.atcClassification.code}`} className="block group">
+              <Link href={`/${language}/classifications/${atcSlug}`} className="block group">
                 <Card hover padding="sm">
                   <div className="flex items-center gap-3">
                     <EntityTypeBadge type="atc" size="sm" />
@@ -261,7 +272,7 @@ export function AMPPDetail({ ampp }: AMPPDetailProps) {
                 {ampp.chapterIVParagraphs.map((para) => (
                   <Link
                     key={`${para.chapterName}-${para.paragraphName}`}
-                    href={`/chapter-iv/${para.chapterName}/${para.paragraphName}`}
+                    href={`/${language}/chapter-iv/${para.chapterName}/${para.paragraphName}`}
                     className="block group"
                   >
                     <Card hover padding="sm">
@@ -301,17 +312,17 @@ export function AMPPDetail({ ampp }: AMPPDetailProps) {
               <div className="flex justify-between">
                 <span className="text-gray-500 dark:text-gray-400">{t('entityLabels.brand')}</span>
                 <Link
-                  href={`/amp/${ampp.amp.code}`}
+                  href={`/${language}/medications/${ampSlug}`}
                   className="font-medium text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[150px]"
                 >
                   {ampName}
                 </Link>
               </div>
-              {ampp.atcClassification && (
+              {ampp.atcClassification && atcSlug && (
                 <div className="flex justify-between">
                   <span className="text-gray-500 dark:text-gray-400">ATC</span>
                   <Link
-                    href={`/atc/${ampp.atcClassification.code}`}
+                    href={`/${language}/classifications/${atcSlug}`}
                     className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
                   >
                     {ampp.atcClassification.code}

@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/lib/hooks/use-language';
 import { useTranslation } from '@/lib/hooks/use-translation';
 import { formatValidityPeriod } from '@/lib/utils/format';
+import { generateEntitySlug, generateCompanySlug } from '@/lib/utils/slug';
 import type { AMPWithRelations } from '@/server/types/entities';
 
 interface AMPDetailProps {
@@ -22,13 +23,17 @@ interface AMPDetailProps {
 }
 
 export function AMPDetail({ amp }: AMPDetailProps) {
-  const { getLocalized } = useLanguage();
+  const { getLocalized, language } = useLanguage();
   const { t } = useTranslation();
   const name = getLocalized(amp.name);
   const vmpName = amp.vmp ? getLocalized(amp.vmp.name) : null;
 
+  // Generate slugs for links
+  const vmpSlug = amp.vmp ? generateEntitySlug(amp.vmp.name, amp.vmp.code, language) : null;
+  const companySlug = amp.company ? generateCompanySlug(amp.company.denomination, amp.company.actorNr) : null;
+
   const breadcrumbs = [
-    ...(amp.vmp ? [{ label: vmpName!, href: `/vmp/${amp.vmp.code}` }] : []),
+    ...(amp.vmp && vmpSlug ? [{ label: vmpName!, href: `/${language}/generics/${vmpSlug}` }] : []),
     { label: name },
   ];
 
@@ -91,9 +96,9 @@ export function AMPDetail({ amp }: AMPDetailProps) {
           </Section>
 
           {/* Generic Product */}
-          {amp.vmp && (
+          {amp.vmp && vmpSlug && (
             <Section title={t('detail.genericProduct')}>
-              <Link href={`/vmp/${amp.vmp.code}`} className="block group">
+              <Link href={`/${language}/generics/${vmpSlug}`} className="block group">
                 <Card hover padding="sm">
                   <div className="flex items-center gap-3">
                     <EntityTypeBadge type="vmp" size="sm" />
@@ -107,9 +112,9 @@ export function AMPDetail({ amp }: AMPDetailProps) {
           )}
 
           {/* Manufacturer */}
-          {amp.company && (
+          {amp.company && companySlug && (
             <Section title={t('detail.manufacturer')}>
-              <Link href={`/company/${amp.company.actorNr}`} className="block group">
+              <Link href={`/${language}/companies/${companySlug}`} className="block group">
                 <Card hover padding="sm">
                   <div className="flex items-center gap-3">
                     <EntityTypeBadge type="company" size="sm" />
@@ -206,37 +211,40 @@ export function AMPDetail({ amp }: AMPDetailProps) {
           {/* Packages */}
           <Section title={t('detail.availablePackages')} count={amp.packages.length}>
             <div className="space-y-2">
-              {amp.packages.map((pkg) => (
-                <Link
-                  key={pkg.code}
-                  href={`/ampp/${pkg.code}`}
-                  className="block group"
-                >
-                  <Card hover padding="sm">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3 min-w-0">
-                        <EntityTypeBadge type="ampp" size="sm" />
-                        <div className="min-w-0">
-                          <p className="font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">
-                            {pkg.packDisplayValue || <LocalizedText text={pkg.name} showFallbackIndicator={false} />}
-                          </p>
-                          {pkg.cnkCode && (
-                            <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                              CNK: {pkg.cnkCode}
+              {amp.packages.map((pkg) => {
+                const pkgSlug = generateEntitySlug(pkg.name, pkg.code, language);
+                return (
+                  <Link
+                    key={pkg.code}
+                    href={`/${language}/packages/${pkgSlug}`}
+                    className="block group"
+                  >
+                    <Card hover padding="sm">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <EntityTypeBadge type="ampp" size="sm" />
+                          <div className="min-w-0">
+                            <p className="font-medium text-gray-900 dark:text-gray-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                              {pkg.packDisplayValue || <LocalizedText text={pkg.name} showFallbackIndicator={false} />}
                             </p>
+                            {pkg.cnkCode && (
+                              <p className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                                CNK: {pkg.cnkCode}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          {pkg.reimbursable && (
+                            <Badge variant="success" size="sm">{t('detail.reimbursable')}</Badge>
                           )}
+                          <PriceDisplay amount={pkg.exFactoryPrice} size="sm" />
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        {pkg.reimbursable && (
-                          <Badge variant="success" size="sm">{t('detail.reimbursable')}</Badge>
-                        )}
-                        <PriceDisplay amount={pkg.exFactoryPrice} size="sm" />
-                      </div>
-                    </div>
-                  </Card>
-                </Link>
-              ))}
+                    </Card>
+                  </Link>
+                );
+              })}
             </div>
           </Section>
         </div>
@@ -246,22 +254,22 @@ export function AMPDetail({ amp }: AMPDetailProps) {
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 space-y-4">
             <h3 className="font-medium text-gray-900 dark:text-gray-100">{t('detail.summary')}</h3>
             <div className="space-y-2 text-sm">
-              {amp.vmp && (
+              {amp.vmp && vmpSlug && (
                 <div className="flex justify-between">
                   <span className="text-gray-500 dark:text-gray-400">{t('entityLabels.generic')}</span>
                   <Link
-                    href={`/vmp/${amp.vmp.code}`}
+                    href={`/${language}/generics/${vmpSlug}`}
                     className="font-medium text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[150px]"
                   >
                     {getLocalized(amp.vmp.name)}
                   </Link>
                 </div>
               )}
-              {amp.company && (
+              {amp.company && companySlug && (
                 <div className="flex justify-between">
                   <span className="text-gray-500 dark:text-gray-400">{t('entityLabels.company')}</span>
                   <Link
-                    href={`/company/${amp.company.actorNr}`}
+                    href={`/${language}/companies/${companySlug}`}
                     className="font-medium text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[150px]"
                   >
                     {amp.company.denomination}

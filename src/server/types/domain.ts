@@ -31,10 +31,16 @@ export interface ValidityPeriod {
 }
 
 /** All supported languages for iteration */
-export const LANGUAGES: Language[] = ['en', 'nl', 'fr', 'de'];
+export const LANGUAGES: Language[] = ['nl', 'fr', 'de', 'en'];
 
-/** Language fallback order */
-export const LANGUAGE_FALLBACK_ORDER: Language[] = ['en', 'nl', 'fr', 'de'];
+/** Language fallback order - NL and FR are primary for Belgian data */
+export const LANGUAGE_FALLBACK_ORDER: Language[] = ['nl', 'fr', 'de', 'en'];
+
+/** Default language for the application */
+export const DEFAULT_LANGUAGE: Language = 'nl';
+
+/** Valid language codes as a Set for fast lookup */
+export const VALID_LANGUAGES = new Set<string>(['nl', 'fr', 'de', 'en']);
 
 /** Entity type display configuration */
 export const ENTITY_TYPE_CONFIG: Record<EntityType, {

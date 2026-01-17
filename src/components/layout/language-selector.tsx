@@ -1,14 +1,16 @@
 'use client';
 
-import { useLanguage } from '@/lib/hooks/use-language';
+import { useRouter, usePathname } from 'next/navigation';
+import { useCurrentLanguage } from '@/lib/hooks/use-language';
 import type { Language } from '@/server/types/domain';
+import { LANGUAGES } from '@/server/types/domain';
 import { cn } from '@/lib/utils/cn';
 
 const LANGUAGE_NAMES: Record<Language, string> = {
-  en: 'English',
   nl: 'Nederlands',
   fr: 'Français',
   de: 'Deutsch',
+  en: 'English',
 };
 
 interface LanguageSelectorProps {
@@ -16,12 +18,36 @@ interface LanguageSelectorProps {
 }
 
 export function LanguageSelector({ className }: LanguageSelectorProps) {
-  const { language, setLanguage } = useLanguage();
+  const router = useRouter();
+  const pathname = usePathname();
+  const currentLanguage = useCurrentLanguage();
+
+  const handleLanguageChange = (newLang: Language) => {
+    if (newLang === currentLanguage) return;
+
+    // Replace the language segment in the current path
+    const pathSegments = pathname.split('/');
+
+    // The first segment after the empty string should be the language
+    if (pathSegments.length > 1 && LANGUAGES.includes(pathSegments[1] as Language)) {
+      pathSegments[1] = newLang;
+    } else {
+      // If no language segment, prepend it
+      pathSegments.splice(1, 0, newLang);
+    }
+
+    const newPath = pathSegments.join('/') || `/${newLang}`;
+
+    // Set cookie for middleware to remember preference
+    document.cookie = `medsearch-language=${newLang}; path=/; max-age=31536000; SameSite=Lax`;
+
+    router.push(newPath);
+  };
 
   return (
     <select
-      value={language}
-      onChange={(e) => setLanguage(e.target.value as Language)}
+      value={currentLanguage}
+      onChange={(e) => handleLanguageChange(e.target.value as Language)}
       className={cn(
         'block rounded-lg border border-gray-300 dark:border-gray-600',
         'bg-white dark:bg-gray-800',
@@ -33,9 +59,9 @@ export function LanguageSelector({ className }: LanguageSelectorProps) {
       )}
       aria-label="Select language"
     >
-      {Object.entries(LANGUAGE_NAMES).map(([code, name]) => (
+      {LANGUAGES.map((code) => (
         <option key={code} value={code}>
-          {name}
+          {LANGUAGE_NAMES[code]}
         </option>
       ))}
     </select>
