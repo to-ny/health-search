@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { EntityHeader } from '@/components/entities/entity-header';
 import { EntityTypeBadge } from '@/components/entities/entity-type-badge';
@@ -27,6 +28,7 @@ export function CompanyDetail({ company, currentPage, pageSize }: CompanyDetailP
   const breadcrumbs = [{ label: company.denomination }];
 
   const totalPages = Math.ceil(company.productCount / pageSize);
+  const searchUrl = `/${language}/search?q=${encodeURIComponent(company.denomination)}&types=amp`;
 
   const handlePageChange = (page: number) => {
     router.push(`/company/${company.actorNr}?page=${page}`);
@@ -113,7 +115,25 @@ export function CompanyDetail({ company, currentPage, pageSize }: CompanyDetailP
           </Section>
 
           {/* Products */}
-          <Section title={t('detail.products')} count={company.productCount}>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                {t('detail.products')}
+                <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                  ({company.productCount})
+                </span>
+              </h3>
+              {company.productCount > 0 && (
+                <Link
+                  href={searchUrl}
+                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  title={t('common.searchAll')}
+                >
+                  <MagnifyingGlassIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('common.searchAll')}</span>
+                </Link>
+              )}
+            </div>
             <div className="space-y-2">
               {company.products.map((product) => (
                 <Link
@@ -143,7 +163,7 @@ export function CompanyDetail({ company, currentPage, pageSize }: CompanyDetailP
                 className="mt-6"
               />
             )}
-          </Section>
+          </div>
         </div>
 
         {/* Sidebar */}
