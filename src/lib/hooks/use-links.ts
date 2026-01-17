@@ -16,6 +16,7 @@ export interface SearchLinkParams {
   atc?: string;
   company?: string;
   vmpGroup?: string;
+  substance?: string;
   page?: number;
 }
 
@@ -147,6 +148,7 @@ export function useLinks(): UseLinksReturn {
       if (params.atc) searchParams.set('atc', params.atc);
       if (params.company) searchParams.set('company', params.company);
       if (params.vmpGroup) searchParams.set('vmpGroup', params.vmpGroup);
+      if (params.substance) searchParams.set('substance', params.substance);
       if (params.page && params.page > 1) searchParams.set('page', params.page.toString());
 
       const qs = searchParams.toString();
@@ -241,6 +243,7 @@ export function createLinks(language: Language): UseLinksReturn {
       if (params.atc) searchParams.set('atc', params.atc);
       if (params.company) searchParams.set('company', params.company);
       if (params.vmpGroup) searchParams.set('vmpGroup', params.vmpGroup);
+      if (params.substance) searchParams.set('substance', params.substance);
       if (params.page && params.page > 1) searchParams.set('page', params.page.toString());
 
       const qs = searchParams.toString();
