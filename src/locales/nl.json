@@ -2,30 +2,15 @@
   "common": {
     "search": "Zoeken",
     "searchPlaceholder": "Zoek medicijnen, stoffen, bedrijven...",
-    "loading": "Laden...",
-    "noResults": "Geen resultaten gevonden",
-    "viewAll": "Alles bekijken",
-    "showMore": "Meer tonen",
     "showLess": "Minder tonen",
     "showAll": "Alles tonen",
-    "filters": "Filters",
-    "clearFilters": "Filters wissen",
     "results": "resultaten",
     "result": "resultaat",
-    "page": "Pagina",
-    "of": "van",
-    "next": "Volgende",
-    "previous": "Vorige",
     "yes": "Ja",
     "no": "Nee",
-    "unknown": "Onbekend",
-    "notAvailable": "N/B",
-    "active": "Actief",
-    "inactive": "Inactief",
     "all": "Alles",
     "typeAtLeast": "Typ minstens 2 tekens",
     "products": "producten",
-    "priceNotAvailable": "Prijs niet beschikbaar",
     "retrySearch": "Opnieuw zoeken",
     "searchAll": "Alles zoeken"
   },
@@ -37,8 +22,7 @@
     "company": "Bedrijf",
     "vmpGroup": "VMP-groep",
     "atc": "ATC-classificatie",
-    "substance": "Stof",
-    "chapterIV": "Hoofdstuk IV"
+    "substance": "Stof"
   },
   "entityLabels": {
     "substance": "Stof",
@@ -52,66 +36,26 @@
     "classification": "Classificatie",
     "therapeuticGroup": "Therapeutische Groep"
   },
-  "entityPlural": {
-    "vtm": "Virtuele Therapeutische Groepen",
-    "vmp": "Virtuele Geneesmiddelen",
-    "amp": "Werkelijke Geneesmiddelen",
-    "ampp": "Werkelijke Geneesmiddelverpakkingen",
-    "company": "Bedrijven",
-    "vmpGroup": "VMP-groepen",
-    "atc": "ATC-classificaties",
-    "substance": "Stoffen",
-    "chapterIV": "Hoofdstuk IV Paragrafen"
-  },
   "search": {
-    "title": "Geneesmiddelen Zoeken",
-    "subtitle": "Zoek in de Belgische geneesmiddelendatabase",
-    "placeholder": "Zoek op naam, code, stof, bedrijf...",
-    "filterByType": "Filteren op type",
-    "allTypes": "Alle types",
     "resultsFor": "voor",
-    "noResultsTitle": "Geen resultaten gevonden",
-    "noResultsMessage": "Probeer uw zoektermen of filters aan te passen",
-    "searching": "Zoeken...",
-    "findMedications": "Vind geneesmiddelen, stoffen, merken en verpakkingen",
-    "examples": "Voorbeelden",
     "filteredBy": "Gefilterd op"
   },
   "detail": {
     "overview": "Overzicht",
-    "composition": "Samenstelling",
-    "substances": "Stoffen",
     "products": "Producten",
     "packages": "Verpakkingen",
-    "pricing": "Prijzen",
     "reimbursement": "Terugbetaling",
     "documents": "Documenten",
-    "relatedProducts": "Gerelateerde Producten",
     "manufacturer": "Fabrikant",
-    "marketingAuthorization": "Handelsvergunning",
     "validity": "Geldigheid",
     "status": "Status",
     "code": "Code",
-    "name": "Naam",
-    "description": "Beschrijving",
-    "activeSubstances": "Actieve Stoffen",
-    "strength": "Sterkte",
-    "pharmaceuticalForm": "Farmaceutische Vorm",
-    "routeOfAdministration": "Toedieningsweg",
-    "atcCode": "ATC-code",
-    "legalCategory": "Wettelijke Categorie",
-    "deliveryModus": "Afleveringsmodus",
-    "blackTriangle": "Zwarte Driehoek",
     "orphanDrug": "Weesgeneesmiddel",
     "hospital": "Ziekenhuis",
     "public": "Publiek",
     "excipients": "Hulpstoffen",
-    "spc": "Samenvatting van Productkenmerken",
-    "leaflet": "Bijsluiter",
-    "copaymentCategory": "Remgeldcategorie",
     "referencePrice": "Referentieprijs",
     "exFactoryPrice": "Prijs af-fabriek",
-    "publicPrice": "Publieksprijs",
     "copayment": "Remgeld",
     "genericProducts": "Generieke Producten",
     "brandProducts": "Merkproducten",
@@ -163,15 +107,12 @@
   "company": {
     "vat": "BTW-nummer",
     "address": "Adres",
-    "productsManufactured": "Geproduceerde Producten",
-    "productsDistributed": "Gedistribueerde Producten",
     "phone": "Telefoon",
     "preferredLanguage": "Voorkeurstaal",
     "legalForm": "Rechtsvorm",
     "country": "Land"
   },
   "chapterIV": {
-    "requirements": "Vereisten & Voorwaarden",
     "coveredProducts": "Gedekte Producten",
     "processType": "Procestype",
     "processOverride": "Procesvervanging",
@@ -189,8 +130,6 @@
   "home": {
     "title": "MedSearch",
     "subtitle": "Zoek in de Belgische Geneesmiddelendatabase",
-    "description": "Zoek en verken de uitgebreide Belgische geneesmiddelendatabase. Vind informatie over geneesmiddelen, stoffen, fabrikanten en terugbetalingsgegevens.",
-    "searchPrompt": "Begin met zoeken naar een geneesmiddel, stof of bedrijf",
     "examples": "Voorbeelden",
     "cnkCode": "CNK-code",
     "atcCode": "ATC-code",
@@ -202,7 +141,6 @@
     "infoReimbursementDescription": "Bekijk dekkingsdetails en patiëntkosten"
   },
   "footer": {
-    "dataSource": "Gegevensbron: SAM v2 (Belgische Geneesmiddelendatabase)",
     "disclaimer": "Uitsluitend ter informatie. Raadpleeg een zorgverlener voor medisch advies."
   },
   "emptyState": {
@@ -297,12 +235,5 @@
     "ampCode": "AMP",
     "ampCodeFull": "AMP-code",
     "ampCodeTooltip": "Werkelijk Geneesmiddelproduct-code - identificeert merkgeneesmiddelproducten"
-  },
-  "atcLevels": {
-    "level1": "Niveau 1 (Anatomisch)",
-    "level2": "Niveau 2 (Therapeutisch)",
-    "level3": "Niveau 3 (Farmacologisch)",
-    "level4": "Niveau 4 (Chemisch)",
-    "level5": "Niveau 5 (Stof)"
   }
 }
