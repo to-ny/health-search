@@ -897,8 +897,21 @@ export async function executeSearch(
     return nameA.localeCompare(nameB);
   });
 
-  const totalCount = scoredResults.length;
-  const paginatedResults = scoredResults.slice(offset, offset + limit);
+  // Calculate total count from facet counts (more accurate than result array length
+  // when pagination is applied with relationship filters)
+  const totalCount = types
+    ? types.reduce((sum, type) => sum + (facetCounts[type] || 0), 0)
+    : Object.values(facetCounts).reduce((sum, count) => sum + count, 0);
+
+  // Check if we applied DB-level pagination (relationship filters)
+  // In this case, results are already paginated, so don't slice again
+  const hasRelationshipFilter = filters && (
+    filters.vtmCode || filters.vmpCode || filters.ampCode ||
+    filters.atcCode || filters.companyCode || filters.vmpGroupCode
+  );
+  const paginatedResults = hasRelationshipFilter
+    ? scoredResults  // Already paginated at DB level
+    : scoredResults.slice(offset, offset + limit);  // In-memory pagination for text search
 
   const results: SearchResultItem[] = paginatedResults.map((r) => ({
     entityType: r.entityType,

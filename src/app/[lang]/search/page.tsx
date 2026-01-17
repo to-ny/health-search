@@ -188,16 +188,6 @@ function SearchContent() {
         <EmptyState variant="no-results" query={query} />
       ) : data ? (
         <div className="space-y-6">
-          {/* Results header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-              {data.totalCount} {data.totalCount !== 1 ? t('common.results') : t('common.result')}
-              {data.query ? (
-                <> {t('search.resultsFor').toLowerCase()} &quot;{data.query}&quot;</>
-              ) : null}
-            </h2>
-          </div>
-
           {/* Type filters */}
           <EntityTypeFilter
             selectedTypes={selectedTypes}
