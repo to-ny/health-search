@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ChevronRightIcon } from '@heroicons/react/20/solid';
+import { ChevronRightIcon, MagnifyingGlassIcon } from '@heroicons/react/20/solid';
 import { Breadcrumbs } from '@/components/layout/breadcrumbs';
 import { EntityHeader } from '@/components/entities/entity-header';
 import { EntityTypeBadge } from '@/components/entities/entity-type-badge';
@@ -35,8 +35,10 @@ function getAtcLevel(code: string): number {
 
 export function ATCDetail({ atc, hierarchy, currentPage, pageSize }: ATCDetailProps) {
   const router = useRouter();
-  useLanguage(); // Hook required for reactivity
+  const { language } = useLanguage();
   const { t } = useTranslation();
+
+  const searchUrl = `/${language}/search?q=${encodeURIComponent(atc.code)}&types=ampp`;
 
   const breadcrumbs = [
     ...hierarchy.slice(0, -1).map((h) => ({
@@ -120,7 +122,25 @@ export function ATCDetail({ atc, hierarchy, currentPage, pageSize }: ATCDetailPr
           )}
 
           {/* Products */}
-          <Section title={t('detail.productsWithClassification')} count={atc.packageCount}>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                {t('detail.productsWithClassification')}
+                <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
+                  ({atc.packageCount})
+                </span>
+              </h3>
+              {atc.packageCount > 0 && (
+                <Link
+                  href={searchUrl}
+                  className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                  title={t('common.searchAll')}
+                >
+                  <MagnifyingGlassIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t('common.searchAll')}</span>
+                </Link>
+              )}
+            </div>
             {atc.packages.length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400">
                 {t('detail.noPackagesDirectly')}
@@ -175,7 +195,7 @@ export function ATCDetail({ atc, hierarchy, currentPage, pageSize }: ATCDetailPr
                 )}
               </>
             )}
-          </Section>
+          </div>
         </div>
 
         {/* Sidebar */}
