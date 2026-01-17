@@ -116,9 +116,31 @@ export async function executeSearch(
   const searchPattern = `%${normalizedQuery}%`;
   const prefixPattern = `${normalizedQuery}%`;
 
+  // Check if we have a meaningful text query
+  const hasTextQuery = normalizedQuery.length > 0;
+
   // Detect special query types
   const isCnkQuery = /^\d{7}$/.test(query.trim());
   const isAtcQuery = /^[A-Z]\d{2}[A-Z]{0,2}\d{0,2}$/i.test(query.trim());
+
+  // Determine which entity types are relevant for the current filters
+  // When relationship filters are applied without a text query, only certain types make sense
+  const getRelevantTypes = (): Set<EntityType> | null => {
+    if (hasTextQuery) return null; // All types are relevant when there's a text query
+
+    const relevantTypes = new Set<EntityType>();
+    if (filters?.vtmCode) relevantTypes.add('vmp');
+    if (filters?.vmpCode) relevantTypes.add('amp');
+    if (filters?.ampCode) relevantTypes.add('ampp');
+    if (filters?.atcCode) relevantTypes.add('ampp');
+    if (filters?.companyCode) relevantTypes.add('amp');
+    if (filters?.vmpGroupCode) relevantTypes.add('vmp');
+
+    return relevantTypes.size > 0 ? relevantTypes : null;
+  };
+
+  const relevantTypes = getRelevantTypes();
+  const isTypeRelevant = (type: EntityType) => !relevantTypes || relevantTypes.has(type);
 
   const allResults: RawSearchResult[] = [];
   const facetCounts: Record<EntityType, number> = {
@@ -138,57 +160,60 @@ export async function executeSearch(
   // Always run count queries for accurate facets, but only fetch results for requested types
   const shouldFetchResults = (type: EntityType) => !types || types.includes(type);
 
-  // VTM search
-  searchPromises.push(
-    (async () => {
-      const result = await sql`
-        SELECT DISTINCT ON (code)
-          'vtm' as entity_type,
-          code,
-          name,
-          NULL as parent_name,
-          NULL as parent_code,
-          NULL as company_name,
-          NULL as pack_info,
-          NULL as price,
-          NULL as reimbursable,
-          NULL as cnk_code,
-          NULL as product_count,
-          NULL as black_triangle
-        FROM vtm
-        WHERE (
-          name->>'en' ILIKE ${searchPattern}
-          OR name->>'nl' ILIKE ${searchPattern}
-          OR name->>'fr' ILIKE ${searchPattern}
-          OR name->>'de' ILIKE ${searchPattern}
-          OR code ILIKE ${prefixPattern}
-        )
-        AND (end_date IS NULL OR end_date > CURRENT_DATE)
-        ORDER BY code
-        LIMIT ${SEARCH_LIMIT_PER_TABLE}
-      `;
-      facetCounts.vtm = result.rows.length;
-      if (shouldFetchResults('vtm')) {
-        result.rows.forEach((r) => {
-          allResults.push({
-            entityType: 'vtm',
-            code: r.code,
-            name: r.name,
+  // VTM search - skip if not relevant (e.g., when filtering by relationship without text query)
+  if (isTypeRelevant('vtm')) {
+    searchPromises.push(
+      (async () => {
+        const result = await sql`
+          SELECT DISTINCT ON (code)
+            'vtm' as entity_type,
+            code,
+            name,
+            NULL as parent_name,
+            NULL as parent_code,
+            NULL as company_name,
+            NULL as pack_info,
+            NULL as price,
+            NULL as reimbursable,
+            NULL as cnk_code,
+            NULL as product_count,
+            NULL as black_triangle
+          FROM vtm
+          WHERE (
+            name->>'en' ILIKE ${searchPattern}
+            OR name->>'nl' ILIKE ${searchPattern}
+            OR name->>'fr' ILIKE ${searchPattern}
+            OR name->>'de' ILIKE ${searchPattern}
+            OR code ILIKE ${prefixPattern}
+          )
+          AND (end_date IS NULL OR end_date > CURRENT_DATE)
+          ORDER BY code
+          LIMIT ${SEARCH_LIMIT_PER_TABLE}
+        `;
+        facetCounts.vtm = result.rows.length;
+        if (shouldFetchResults('vtm')) {
+          result.rows.forEach((r) => {
+            allResults.push({
+              entityType: 'vtm',
+              code: r.code,
+              name: r.name,
+            });
           });
-        });
-      }
-    })()
-  );
+        }
+      })()
+    );
+  }
 
-  // VMP search
-  searchPromises.push(
-    (async () => {
-      // Support filtering by VTM code or VMP Group code
-      const vtmFilter = filters?.vtmCode;
-      const vmpGroupFilter = filters?.vmpGroupCode;
+  // VMP search - skip if not relevant (unless has its own filter)
+  if (isTypeRelevant('vmp')) {
+    searchPromises.push(
+      (async () => {
+        // Support filtering by VTM code or VMP Group code
+        const vtmFilter = filters?.vtmCode;
+        const vmpGroupFilter = filters?.vmpGroupCode;
 
-      let result;
-      if (vtmFilter) {
+        let result;
+        if (vtmFilter) {
         result = await sql`
           SELECT DISTINCT ON (v.code)
             'vmp' as entity_type,
@@ -263,27 +288,29 @@ export async function executeSearch(
           LIMIT ${SEARCH_LIMIT_PER_TABLE}
         `;
       }
-      facetCounts.vmp = result.rows.length;
-      if (shouldFetchResults('vmp')) {
-        result.rows.forEach((r) => {
-          allResults.push({
-            entityType: 'vmp',
-            code: r.code,
-            name: r.name,
-            parentName: r.parent_name,
-            parentCode: r.parent_code,
+        facetCounts.vmp = result.rows.length;
+        if (shouldFetchResults('vmp')) {
+          result.rows.forEach((r) => {
+            allResults.push({
+              entityType: 'vmp',
+              code: r.code,
+              name: r.name,
+              parentName: r.parent_name,
+              parentCode: r.parent_code,
+            });
           });
-        });
-      }
-    })()
-  );
+        }
+      })()
+    );
+  }
 
-  // AMP search
-  searchPromises.push(
-    (async () => {
-      // Support filtering by VMP code or company code
-      const vmpFilter = filters?.vmpCode;
-      const companyFilter = filters?.companyCode;
+  // AMP search - skip if not relevant (unless has its own filter)
+  if (isTypeRelevant('amp')) {
+    searchPromises.push(
+      (async () => {
+        // Support filtering by VMP code or company code
+        const vmpFilter = filters?.vmpCode;
+        const companyFilter = filters?.companyCode;
 
       let result;
       if (vmpFilter) {
@@ -364,29 +391,31 @@ export async function executeSearch(
           LIMIT ${SEARCH_LIMIT_PER_TABLE}
         `;
       }
-      facetCounts.amp = result.rows.length;
-      if (shouldFetchResults('amp')) {
-        result.rows.forEach((r) => {
-          allResults.push({
-            entityType: 'amp',
-            code: r.code,
-            name: r.name,
-            parentName: r.parent_name,
-            parentCode: r.parent_code,
-            companyName: r.company_name,
-            blackTriangle: r.black_triangle,
+        facetCounts.amp = result.rows.length;
+        if (shouldFetchResults('amp')) {
+          result.rows.forEach((r) => {
+            allResults.push({
+              entityType: 'amp',
+              code: r.code,
+              name: r.name,
+              parentName: r.parent_name,
+              parentCode: r.parent_code,
+              companyName: r.company_name,
+              blackTriangle: r.black_triangle,
+            });
           });
-        });
-      }
-    })()
-  );
+        }
+      })()
+    );
+  }
 
-  // AMPP search (including CNK codes)
-  searchPromises.push(
-    (async () => {
-      // Support filtering by AMP code or ATC code
-      const ampFilter = filters?.ampCode;
-      const atcFilter = filters?.atcCode;
+  // AMPP search (including CNK codes) - skip if not relevant (unless has its own filter)
+  if (isTypeRelevant('ampp')) {
+    searchPromises.push(
+      (async () => {
+        // Support filtering by AMP code or ATC code
+        const ampFilter = filters?.ampCode;
+        const atcFilter = filters?.atcCode;
 
       let amppQuery;
       if (ampFilter) {
@@ -522,29 +551,31 @@ export async function executeSearch(
           LIMIT ${SEARCH_LIMIT_PER_TABLE}
         `;
       }
-      const result = await amppQuery;
-      facetCounts.ampp = result.rows.length;
-      if (shouldFetchResults('ampp')) {
-        result.rows.forEach((r) => {
-          allResults.push({
-            entityType: 'ampp',
-            code: r.code,
-            name: r.name,
-            parentName: r.parent_name,
-            parentCode: r.parent_code,
-            packInfo: r.pack_info,
-            price: r.price,
-            reimbursable: r.reimbursable,
-            cnkCode: r.cnk_code,
+        const result = await amppQuery;
+        facetCounts.ampp = result.rows.length;
+        if (shouldFetchResults('ampp')) {
+          result.rows.forEach((r) => {
+            allResults.push({
+              entityType: 'ampp',
+              code: r.code,
+              name: r.name,
+              parentName: r.parent_name,
+              parentCode: r.parent_code,
+              packInfo: r.pack_info,
+              price: r.price,
+              reimbursable: r.reimbursable,
+              cnkCode: r.cnk_code,
+            });
           });
-        });
-      }
-    })()
-  );
+        }
+      })()
+    );
+  }
 
-  // Company search
-  searchPromises.push(
-    (async () => {
+  // Company search - skip if not relevant
+  if (isTypeRelevant('company')) {
+    searchPromises.push(
+      (async () => {
       const result = await sql`
         SELECT DISTINCT ON (c.actor_nr)
           'company' as entity_type,
@@ -565,23 +596,25 @@ export async function executeSearch(
         ORDER BY c.actor_nr
         LIMIT ${SEARCH_LIMIT_PER_TABLE}
       `;
-      facetCounts.company = result.rows.length;
-      if (shouldFetchResults('company')) {
-        result.rows.forEach((r) => {
-          allResults.push({
-            entityType: 'company',
-            code: r.code,
-            name: r.name,
-            productCount: r.product_count,
+        facetCounts.company = result.rows.length;
+        if (shouldFetchResults('company')) {
+          result.rows.forEach((r) => {
+            allResults.push({
+              entityType: 'company',
+              code: r.code,
+              name: r.name,
+              productCount: r.product_count,
+            });
           });
-        });
-      }
-    })()
-  );
+        }
+      })()
+    );
+  }
 
-  // VMP Group search
-  searchPromises.push(
-    (async () => {
+  // VMP Group search - skip if not relevant
+  if (isTypeRelevant('vmp_group')) {
+    searchPromises.push(
+      (async () => {
       const result = await sql`
         SELECT DISTINCT ON (code)
           'vmp_group' as entity_type,
@@ -607,22 +640,24 @@ export async function executeSearch(
         ORDER BY code
         LIMIT ${SEARCH_LIMIT_PER_TABLE}
       `;
-      facetCounts.vmp_group = result.rows.length;
-      if (shouldFetchResults('vmp_group')) {
-        result.rows.forEach((r) => {
-          allResults.push({
-            entityType: 'vmp_group',
-            code: r.code,
-            name: r.name,
+        facetCounts.vmp_group = result.rows.length;
+        if (shouldFetchResults('vmp_group')) {
+          result.rows.forEach((r) => {
+            allResults.push({
+              entityType: 'vmp_group',
+              code: r.code,
+              name: r.name,
+            });
           });
-        });
-      }
-    })()
-  );
+        }
+      })()
+    );
+  }
 
-  // Substance search
-  searchPromises.push(
-    (async () => {
+  // Substance search - skip if not relevant
+  if (isTypeRelevant('substance')) {
+    searchPromises.push(
+      (async () => {
       const result = await sql`
         SELECT DISTINCT ON (code)
           'substance' as entity_type,
@@ -648,22 +683,24 @@ export async function executeSearch(
         ORDER BY code
         LIMIT ${SEARCH_LIMIT_PER_TABLE}
       `;
-      facetCounts.substance = result.rows.length;
-      if (shouldFetchResults('substance')) {
-        result.rows.forEach((r) => {
-          allResults.push({
-            entityType: 'substance',
-            code: r.code,
-            name: r.name,
+        facetCounts.substance = result.rows.length;
+        if (shouldFetchResults('substance')) {
+          result.rows.forEach((r) => {
+            allResults.push({
+              entityType: 'substance',
+              code: r.code,
+              name: r.name,
+            });
           });
-        });
-      }
-    })()
-  );
+        }
+      })()
+    );
+  }
 
-  // ATC search
-  searchPromises.push(
-    (async () => {
+  // ATC search - skip if not relevant
+  if (isTypeRelevant('atc')) {
+    searchPromises.push(
+      (async () => {
       let atcQuery;
       if (isAtcQuery) {
         atcQuery = sql`
@@ -709,19 +746,20 @@ export async function executeSearch(
           LIMIT ${SEARCH_LIMIT_PER_TABLE}
         `;
       }
-      const result = await atcQuery;
-      facetCounts.atc = result.rows.length;
-      if (shouldFetchResults('atc')) {
-        result.rows.forEach((r) => {
-          allResults.push({
-            entityType: 'atc',
-            code: r.code,
-            name: r.name,
+        const result = await atcQuery;
+        facetCounts.atc = result.rows.length;
+        if (shouldFetchResults('atc')) {
+          result.rows.forEach((r) => {
+            allResults.push({
+              entityType: 'atc',
+              code: r.code,
+              name: r.name,
+            });
           });
-        });
-      }
-    })()
-  );
+        }
+      })()
+    );
+  }
 
   // Wait for all searches to complete
   await Promise.all(searchPromises);
