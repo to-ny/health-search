@@ -116,7 +116,7 @@ export function VMPDetail({ vmp }: VMPDetailProps) {
           <RelationshipList
             title={t('detail.brandProducts')}
             items={ampItems}
-            searchQuery={name}
+            searchFilter={{ type: 'vmp', code: vmp.code }}
             searchType="amp"
           />
 
