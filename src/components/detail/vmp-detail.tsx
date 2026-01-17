@@ -56,20 +56,22 @@ export function VMPDetail({ vmp }: VMPDetailProps) {
           />
 
           {/* Overview */}
-          <Section title={t('detail.overview')}>
-            <InfoList>
-              {vmp.abbreviatedName && (
+          {(vmp.abbreviatedName || vmp.startDate || vmp.endDate) && (
+            <Section title={t('detail.overview')}>
+              <InfoList>
+                {vmp.abbreviatedName && (
+                  <InfoRow
+                    label={t('detail.abbreviatedName')}
+                    value={<LocalizedText text={vmp.abbreviatedName} />}
+                  />
+                )}
                 <InfoRow
-                  label={t('detail.abbreviatedName')}
-                  value={<LocalizedText text={vmp.abbreviatedName} />}
+                  label={t('detail.validity')}
+                  value={formatValidityPeriod(vmp.startDate, vmp.endDate)}
                 />
-              )}
-              <InfoRow
-                label={t('detail.validity')}
-                value={formatValidityPeriod(vmp.startDate, vmp.endDate)}
-              />
-            </InfoList>
-          </Section>
+              </InfoList>
+            </Section>
+          )}
 
           {/* Active Substance */}
           {vmp.vtm && vtmSlug && (
