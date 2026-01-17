@@ -149,7 +149,8 @@
     "patientFrailtyIndicator": "Patiënt Kwetsbaarheid Indicator",
     "patientFrailtyDescription": "Deze therapeutische groep vereist speciale aandacht voor kwetsbare patiënten.",
     "noGenericPrescription": "Geen Generiek Voorschrift",
-    "noSwitching": "Geen Wisseling"
+    "noSwitching": "Geen Wisseling",
+    "productsContainingIngredient": "Producten met Dit Ingrediënt"
   },
   "languages": {
     "dutch": "Nederlands",

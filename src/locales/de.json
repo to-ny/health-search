@@ -149,7 +149,8 @@
     "patientFrailtyIndicator": "Patientenfragilitätsindikator",
     "patientFrailtyDescription": "Diese therapeutische Gruppe erfordert besondere Aufmerksamkeit für gebrechliche Patienten.",
     "noGenericPrescription": "Keine generische Verschreibung",
-    "noSwitching": "Kein Wechsel"
+    "noSwitching": "Kein Wechsel",
+    "productsContainingIngredient": "Produkte mit Diesem Inhaltsstoff"
   },
   "languages": {
     "dutch": "Niederländisch",
