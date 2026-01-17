@@ -9,7 +9,8 @@ import { cn } from '@/lib/utils/cn';
 import { useLanguage } from '@/lib/hooks/use-language';
 import { useTranslation } from '@/lib/hooks/use-translation';
 import { LocalizedText } from '@/components/shared/localized-text';
-import type { EntityType, MultilingualText } from '@/server/types/domain';
+import { generateEntitySlug, generateCompanySlug, generateATCSlug } from '@/lib/utils/slug';
+import type { EntityType, MultilingualText, Language } from '@/server/types/domain';
 
 interface RelationshipItem {
   entityType: EntityType;
@@ -23,25 +24,41 @@ interface RelationshipListProps {
   items: RelationshipItem[];
   maxInitialDisplay?: number;
   className?: string;
-  getHref?: (item: RelationshipItem) => string;
+  getHref?: (item: RelationshipItem, lang: Language) => string;
 }
 
-function getDefaultHref(item: RelationshipItem): string {
+function getDefaultHref(item: RelationshipItem, lang: Language): string {
   switch (item.entityType) {
     case 'vtm':
-      return `/vtm/${item.code}`;
-    case 'vmp':
-      return `/vmp/${item.code}`;
-    case 'amp':
-      return `/amp/${item.code}`;
-    case 'ampp':
-      return `/ampp/${item.code}`;
-    case 'company':
-      return `/company/${item.code}`;
-    case 'vmp_group':
-      return `/vmp-group/${item.code}`;
-    case 'atc':
-      return `/atc/${item.code}`;
+    case 'substance': {
+      const slug = generateEntitySlug(item.name, item.code, lang);
+      return `/${lang}/substances/${slug}`;
+    }
+    case 'vmp': {
+      const slug = generateEntitySlug(item.name, item.code, lang);
+      return `/${lang}/generics/${slug}`;
+    }
+    case 'amp': {
+      const slug = generateEntitySlug(item.name, item.code, lang);
+      return `/${lang}/medications/${slug}`;
+    }
+    case 'ampp': {
+      const slug = generateEntitySlug(item.name, item.code, lang);
+      return `/${lang}/packages/${slug}`;
+    }
+    case 'company': {
+      const companyName = item.name?.nl || item.name?.fr || item.name?.en || item.name?.de || '';
+      const slug = generateCompanySlug(companyName, item.code);
+      return `/${lang}/companies/${slug}`;
+    }
+    case 'vmp_group': {
+      const slug = generateEntitySlug(item.name, item.code, lang);
+      return `/${lang}/therapeutic-groups/${slug}`;
+    }
+    case 'atc': {
+      const slug = generateATCSlug(item.code, item.name, lang);
+      return `/${lang}/classifications/${slug}`;
+    }
     default:
       return '#';
   }
@@ -55,7 +72,7 @@ export function RelationshipList({
   getHref = getDefaultHref,
 }: RelationshipListProps) {
   const [showAll, setShowAll] = useState(false);
-  useLanguage(); // Hook required for reactivity
+  const { language } = useLanguage();
   const { t } = useTranslation();
 
   if (items.length === 0) {
@@ -78,7 +95,7 @@ export function RelationshipList({
         {displayedItems.map((item) => (
           <Link
             key={`${item.entityType}-${item.code}`}
-            href={getHref(item)}
+            href={getHref(item, language)}
             className="group block"
           >
             <div className={cn(

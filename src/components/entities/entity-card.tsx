@@ -10,8 +10,9 @@ import { useTranslation } from '@/lib/hooks/use-translation';
 import { LocalizedText } from '@/components/shared/localized-text';
 import { formatPrice } from '@/lib/utils/format';
 import { cn } from '@/lib/utils/cn';
+import { generateEntitySlug, generateCompanySlug, generateATCSlug } from '@/lib/utils/slug';
 import type { SearchResultItem } from '@/server/types/api';
-import type { EntityType } from '@/server/types/domain';
+import type { EntityType, Language, MultilingualText } from '@/server/types/domain';
 
 interface EntityCardProps {
   entity: SearchResultItem;
@@ -19,33 +20,53 @@ interface EntityCardProps {
   className?: string;
 }
 
-function getEntityHref(entityType: EntityType, code: string): string {
+function getEntityHref(
+  entityType: EntityType,
+  name: MultilingualText | null,
+  code: string,
+  lang: Language
+): string {
   switch (entityType) {
     case 'vtm':
-      return `/vtm/${code}`;
-    case 'vmp':
-      return `/vmp/${code}`;
-    case 'amp':
-      return `/amp/${code}`;
-    case 'ampp':
-      return `/ampp/${code}`;
-    case 'company':
-      return `/company/${code}`;
-    case 'vmp_group':
-      return `/vmp-group/${code}`;
-    case 'substance':
-      return `/vtm/${code}`; // Substances link to VTM
-    case 'atc':
-      return `/atc/${code}`;
+    case 'substance': {
+      const slug = generateEntitySlug(name, code, lang);
+      return `/${lang}/substances/${slug}`;
+    }
+    case 'vmp': {
+      const slug = generateEntitySlug(name, code, lang);
+      return `/${lang}/generics/${slug}`;
+    }
+    case 'amp': {
+      const slug = generateEntitySlug(name, code, lang);
+      return `/${lang}/medications/${slug}`;
+    }
+    case 'ampp': {
+      const slug = generateEntitySlug(name, code, lang);
+      return `/${lang}/packages/${slug}`;
+    }
+    case 'company': {
+      // Company name is plain string, not MultilingualText
+      const companyName = name?.nl || name?.fr || name?.en || name?.de || '';
+      const slug = generateCompanySlug(companyName, code);
+      return `/${lang}/companies/${slug}`;
+    }
+    case 'vmp_group': {
+      const slug = generateEntitySlug(name, code, lang);
+      return `/${lang}/therapeutic-groups/${slug}`;
+    }
+    case 'atc': {
+      const slug = generateATCSlug(code, name, lang);
+      return `/${lang}/classifications/${slug}`;
+    }
     default:
       return '#';
   }
 }
 
 export function EntityCard({ entity, variant = 'default', className }: EntityCardProps) {
-  useLanguage(); // Hook required for reactivity
+  const { language } = useLanguage();
   const { t } = useTranslation();
-  const href = getEntityHref(entity.entityType, entity.code);
+  const href = getEntityHref(entity.entityType, entity.name, entity.code, language);
 
   const isCompact = variant === 'compact';
 
